@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+/*
+  Velvetine design tokens.
+  Warm, low-lit, private-members-club feeling - deliberately not the
+  bright swipe-app look, and not the generic AI-dark-mode
+  (near-black + single acid accent) either. Base is a warm coffee-brown
+  near-black, not a blue-black or true #000.
+*/
+:root {
+  --color-ink: #15100d;          /* page background */
+  --color-surface: #241c17;      /* cards, panels */
+  --color-surface-raised: #2e241d; /* hover / raised elements */
+  --color-border: #4a3a2c;       /* hairline borders, dividers */
+
+  --color-ivory: #f1e8d8;        /* primary text on dark */
+  --color-ivory-muted: #c9bba3;  /* secondary text on dark */
+
+  --color-gold: #b8923f;         /* antique gold - tier badges, accents */
+  --color-gold-bright: #d9b667;  /* hover state for gold elements */
+  --color-wine: #5e2233;         /* deep wine - primary CTA, warmth */
+  --color-wine-bright: #7a2e42;  /* hover state for wine elements */
+
+  --font-display: var(--font-fraunces);
+  --font-body: var(--font-manrope);
+}
+
+@theme inline {
+  --color-ink: var(--color-ink);
+  --color-surface: var(--color-surface);
+  --color-surface-raised: var(--color-surface-raised);
+  --color-border: var(--color-border);
+  --color-ivory: var(--color-ivory);
+  --color-ivory-muted: var(--color-ivory-muted);
+  --color-gold: var(--color-gold);
+  --color-gold-bright: var(--color-gold-bright);
+  --color-wine: var(--color-wine);
+  --color-wine-bright: var(--color-wine-bright);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-ivory);
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+}
+
+::selection {
+  background: var(--color-wine);
+  color: var(--color-ivory);
+}

@@ -1,0 +1,543 @@
+// Velvetine database schema
+// Meetrana date-booking integration is deliberately NOT included yet -
+// Meetrana isn't deployed/running. Add a DateBooking model later once it is;
+// this schema doesn't need to change to support that, it's purely additive.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Core account ----------
+
+model User {
+  id                     String    @id @default(cuid())
+  email                  String    @unique
+  passwordHash           String
+  displayName            String
+  birthDate              DateTime // 18+ enforced at signup, see src/lib/age.ts
+  gender                 Gender
+  seekingGender          Gender[]
+  locationCity           String?
+  locationCountry        String?
+  bio                    String?   @db.Text
+  heightCm               Int?
+  occupation             String?
+  bodyType               BodyType?
+  hairColor              HairColor?
+  relationshipIntent     RelationshipIntent?
+
+  // Hidden matching preferences - never shown to anyone, including the
+  // person being matched. Used only to rank the discovery feed so better
+  // fits surface first. Soft ranking, not a hard filter - nobody gets
+  // excluded from view just for not matching these.
+  prefHeightMin          Int?
+  prefHeightMax          Int?
+  prefBodyTypes          BodyType[]
+  prefHairColors         HairColor[]
+
+  tierId                 String?
+  tier                   Tier?     @relation(fields: [tierId], references: [id])
+  stripeCustomerId       String?   @unique
+  stripeSubscriptionId   String?   @unique
+  subscriptionStatus     SubscriptionStatus @default(NONE)
+
+  verified               Boolean   @default(false) // identity/photo verification (selfie), not email
+  emailVerified          Boolean   @default(false)
+  accountStatus          AccountStatus @default(ACTIVE)
+  suspendedUntil         DateTime?
+  isAdmin                Boolean   @default(false)
+  warningCount           Int       @default(0)
+  incognitoMode          Boolean   @default(false)
+  boostedUntil           DateTime?
+  equippedFrameId        String?
+  lastViewedLikesAt      DateTime?
+
+  // Explicit, separate consent for processing gender/seekingGender - this
+  // can reveal sexual orientation, which GDPR Art. 9 treats as a special
+  // category needing its own consent, not one bundled into general ToS
+  // acceptance (this is the specific gap a 2021 Norwegian DPA ruling
+  // fined Grindr over - see /villkor and /integritetspolicy).
+  specialCategoryConsentAt DateTime?
+
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  deletedAt              DateTime?
+
+  photos                 Photo[]
+  promptAnswers          ProfilePromptAnswer[]
+  interests              UserInterest[]
+  tierVisibilityPrefs    TierVisibilityPref[]
+  tierApplications       TierApplication[]
+  verificationSelfie     VerificationSelfie?
+  passwordResetTokens    PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  pushSubscriptions       PushSubscription[]
+  storeItemPurchases      UserStoreItem[]
+  safetyFlags             SafetyFlag[]
+
+  discretionBlocksMade   DiscretionBlock[] @relation("DiscretionBlocker")
+  discretionBlocksOnMe   DiscretionBlock[] @relation("DiscretionHidden")
+  showcaseItems          ShowcaseItem[]
+
+  swipesMade             Swipe[]   @relation("SwipeFrom")
+  swipesReceived         Swipe[]   @relation("SwipeTo")
+
+  matchesAsA             Match[]   @relation("MatchUserA")
+  matchesAsB             Match[]   @relation("MatchUserB")
+
+  messagesSent           Message[]
+
+  blocksMade             Block[]   @relation("BlockerUser")
+  blocksReceived         Block[]   @relation("BlockedUser")
+
+  reportsMade            Report[]  @relation("ReporterUser")
+  reportsReceived        Report[]  @relation("ReportedUser")
+
+  @@index([tierId])
+  @@index([accountStatus])
+}
+
+enum Gender {
+  WOMAN
+  MAN
+  NONBINARY
+  OTHER
+}
+
+enum RelationshipIntent {
+  SERIOUS
+  CASUAL
+  FRIENDSHIP
+  NOT_SURE
+}
+
+enum BodyType {
+  SLIM
+  ATHLETIC
+  AVERAGE
+  CURVY
+  MUSCULAR
+  PLUS_SIZE
+}
+
+enum HairColor {
+  BLONDE
+  BROWN
+  BLACK
+  RED
+  GRAY
+  OTHER
+}
+
+enum SubscriptionStatus {
+  NONE
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  DELETED
+}
+
+// ---------- Tiers / payment status badge ----------
+
+model Tier {
+  id                  String   @id @default(cuid())
+  name                String   @unique
+  nameEn              String?
+  level               Int      @unique // 1 (lowest) .. 5 (highest) - sort order
+  priceMonthlySek      Int // price in ören (minor units), e.g. 29900 = 299.00 kr
+  stripePriceId       String?  @unique
+  badgeIcon           String // key into the badge icon set, not a raw URL
+  badgeColor          String // hex, matches the tier's visual identity
+  requiresApplication Boolean  @default(false) // true for exclusive top tier(s)
+
+  users               User[]
+  applications        TierApplication[]
+  visibilityPrefs     TierVisibilityPref[]
+}
+
+enum StoreItemCategory {
+  FRAME
+}
+
+// One-time-purchase cosmetics ("flex" items) - separate from the
+// recurring tier subscription. A person can own several; which one is
+// actually shown is tracked via User.equippedFrameId below.
+model StoreItem {
+  id            String            @id @default(cuid())
+  name          String
+  nameEn        String?
+  description   String?
+  category      StoreItemCategory
+  priceSek      Int // ören, one-time (not recurring)
+  stripePriceId String?           @unique
+  frameColor    String // hex - the frame's own color, independent of tier
+  frameStyle    String // key describing the visual pattern (see FRAME_STYLES in ProfileCard)
+  active        Boolean           @default(true) // false = no longer sold, but past owners keep it
+  order         Int               @default(0)
+
+  purchases     UserStoreItem[]
+}
+
+model UserStoreItem {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  storeItemId String
+  storeItem   StoreItem @relation(fields: [storeItemId], references: [id])
+  purchasedAt DateTime  @default(now())
+
+  @@unique([userId, storeItemId])
+}
+
+// Vetting for tiers where requiresApplication = true.
+// A user can still subscribe at a lower tier while an application is pending.
+model TierApplication {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  tierId      String
+  tier        Tier     @relation(fields: [tierId], references: [id])
+  status      ApplicationStatus @default(PENDING)
+  note        String?  @db.Text // applicant's own note, shown to reviewer
+  reviewedAt  DateTime?
+  reviewedBy  String? // admin user id, not a FK to keep admin actions simple
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, tierId])
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Per-tier visibility toggle in a user's own discovery feed.
+// Absence of a row for a given tier defaults to "visible" (opt-out model),
+// see src/lib/discoveryFeed.ts for the exact default-handling.
+model TierVisibilityPref {
+  id       String  @id @default(cuid())
+  userId   String
+  user     User    @relation(fields: [userId], references: [id])
+  tierId   String
+  tier     Tier    @relation(fields: [tierId], references: [id])
+  visible  Boolean @default(true)
+
+  @@unique([userId, tierId])
+}
+
+// ---------- Profile content ----------
+
+model Photo {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  url       String
+  order     Int      @default(0)
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Prompt {
+  id       String  @id @default(cuid())
+  question String
+  questionEn String?
+  category String // e.g. "Om dig", "Livsstil", "Vad du söker"
+  active   Boolean @default(true)
+
+  answers  ProfilePromptAnswer[]
+}
+
+model ProfilePromptAnswer {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  promptId String
+  prompt   Prompt @relation(fields: [promptId], references: [id])
+  answer   String @db.Text
+  order    Int    @default(0)
+
+  @@unique([userId, promptId])
+}
+
+model Interest {
+  id    String @id @default(cuid())
+  name  String @unique
+  users UserInterest[]
+}
+
+model UserInterest {
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  interestId String
+  interest   Interest @relation(fields: [interestId], references: [id])
+
+  @@id([userId, interestId])
+}
+
+// Text-only for now, deliberately - a photo per item is an obvious next
+// step but needs the same photo storage decision as profile photos
+// (Vercel Blob or similar), not yet connected. Nothing here needs to
+// change when that's added - a photoUrl column slots in later.
+model ShowcaseItem {
+  id          String           @id @default(cuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id])
+  category    ShowcaseCategory
+  name        String
+  description String?          @db.Text
+  photoUrl    String?
+  order       Int              @default(0)
+  createdAt   DateTime         @default(now())
+
+  @@index([userId])
+}
+
+enum ShowcaseCategory {
+  CAR
+  BOAT
+  PLANE
+  PROPERTY
+  PET
+  OTHER
+}
+
+// ---------- Safety / verification ----------
+
+model VerificationSelfie {
+  id          String             @id @default(cuid())
+  userId      String             @unique
+  user        User               @relation(fields: [userId], references: [id])
+  selfieUrl   String
+  matchScore  Float?
+  status      VerificationStatus @default(PENDING)
+  reviewedAt  DateTime?
+  createdAt   DateTime           @default(now())
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  FAILED
+}
+
+// One row per issued reset link. tokenHash is a sha256 of the raw token
+// sent by email - only the hash lives in the DB, same principle as not
+// storing plaintext passwords.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Deliberately DB-backed rather than an in-memory counter - Vercel's
+// serverless functions don't share memory between instances, so an
+// in-memory limiter would silently do nothing in production despite
+// working fine in local dev with a single process.
+model RateLimitAttempt {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
+
+// A persistent record whenever automated moderation flags suspected
+// CSAM, so it's never lost in a server log that scrolls away. The
+// account is suspended immediately when this is created (see
+// src/lib/imageModeration.ts) - review and any external reporting
+// (NCMEC CyberTipline, once registered as an ESP) is a manual step from
+// here, not something the code does on its own.
+model SafetyFlag {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  context   String // e.g. "profile_photo", "showcase_photo", "chat_image", "verification_selfie"
+  imageUrl  String // kept for review purposes even though the account is suspended
+  createdAt DateTime @default(now())
+  reviewedAt DateTime?
+  reviewedBy String?
+
+  @@index([userId])
+}
+
+// Hide my profile from a specific person (discretion mode), independent of Block.
+model DiscretionBlock {
+  id             String @id @default(cuid())
+  userId         String
+  user           User   @relation("DiscretionBlocker", fields: [userId], references: [id])
+  hiddenFromId   String
+  hiddenFrom     User   @relation("DiscretionHidden", fields: [hiddenFromId], references: [id])
+  createdAt      DateTime @default(now())
+
+  @@unique([userId, hiddenFromId])
+}
+
+// ---------- Matching ----------
+
+model Swipe {
+  id          String        @id @default(cuid())
+  fromUserId  String
+  fromUser    User          @relation("SwipeFrom", fields: [fromUserId], references: [id])
+  toUserId    String
+  toUser      User          @relation("SwipeTo", fields: [toUserId], references: [id])
+  direction   SwipeDirection
+  createdAt   DateTime      @default(now())
+
+  @@unique([fromUserId, toUserId])
+  @@index([toUserId])
+}
+
+enum SwipeDirection {
+  LIKE
+  PASS
+}
+
+model Match {
+  id         String      @id @default(cuid())
+  userAId    String
+  userA      User        @relation("MatchUserA", fields: [userAId], references: [id])
+  userBId    String
+  userB      User        @relation("MatchUserB", fields: [userBId], references: [id])
+  status     MatchStatus @default(ACTIVE)
+  createdAt  DateTime    @default(now())
+
+  // Null means "never opened this thread" - distinct from "opened it a
+  // while ago", since a brand-new match with zero messages should still
+  // show as needing attention until actually viewed once.
+  lastReadByA DateTime?
+  lastReadByB DateTime?
+
+  messages   Message[]
+
+  @@unique([userAId, userBId])
+}
+
+enum MatchStatus {
+  ACTIVE
+  UNMATCHED
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  matchId   String
+  match     Match    @relation(fields: [matchId], references: [id])
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  content   String?  @db.Text
+  imageUrl  String?
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([matchId])
+}
+
+// ---------- Safety actions ----------
+
+model Block {
+  id         String   @id @default(cuid())
+  blockerId  String
+  blocker    User     @relation("BlockerUser", fields: [blockerId], references: [id])
+  blockedId  String
+  blocked    User     @relation("BlockedUser", fields: [blockedId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+}
+
+model Report {
+  id             String       @id @default(cuid())
+  reporterId     String
+  reporter       User         @relation("ReporterUser", fields: [reporterId], references: [id])
+  reportedUserId String
+  reportedUser   User         @relation("ReportedUser", fields: [reportedUserId], references: [id])
+  reason         ReportReason
+  details        String?      @db.Text
+  status         ReportStatus @default(PENDING)
+  createdAt      DateTime     @default(now())
+  resolvedAt     DateTime?
+
+  // Filled in automatically by src/lib/aiModeration.ts when OPENAI_API_KEY
+  // is configured. Null means "not assessed yet" (no key set, or the AI
+  // call failed) - admin can still resolve the report manually either way.
+  aiSeverity     ReportSeverity?
+  aiSummary      String?         @db.Text
+  aiReviewedAt   DateTime?
+}
+
+enum ReportSeverity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ReportReason {
+  FAKE_PROFILE
+  HARASSMENT
+  INAPPROPRIATE_CONTENT
+  UNDERAGE_SUSPECTED
+  SCAM
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  ACTIONED
+  DISMISSED
+}
+
+// One row per page view. visitorHash is a same-day hash of IP + user agent
+// (see src/lib/tracking.ts) - never a persistent cookie or stored IP. It
+// resets every day, which is enough to dedupe "unique visitors" without
+// keeping anything that identifies a specific person long-term or that
+// would legally require a cookie-consent banner.
+model PageView {
+  id          String   @id @default(cuid())
+  path        String
+  visitorHash String
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}

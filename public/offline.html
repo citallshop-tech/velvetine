@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Velvetine — ingen anslutning</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #15100d;
+      color: #f1e8d8;
+      font-family: Georgia, "Times New Roman", serif;
+      text-align: center;
+      padding: 24px;
+    }
+    .wordmark {
+      font-style: italic;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      color: #f1e8d8;
+    }
+    p {
+      color: #c9bba3;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 24rem;
+      line-height: 1.6;
+    }
+    button {
+      margin-top: 1.5rem;
+      padding: 0.6rem 1.4rem;
+      background: transparent;
+      border: 1px solid #b8923f;
+      color: #f1e8d8;
+      border-radius: 2px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="wordmark">Velvetine</div>
+    <p>Ingen internetanslutning just nu. Sidor du redan besökt kan fungera, men det mesta av Velvetine kräver att du är uppkopplad.</p>
+    <button onclick="location.reload()">Försök igen</button>
+  </div>
+</body>
+</html>
