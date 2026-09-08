@@ -1101,6 +1101,15 @@ visas ("Ja, visa" efter en tydlig varning) - inte casual, men inte
 omöjlig heller. Går att dölja igen direkt. URL:en för rapportering
 finns kvar som referens under bilden.
 
+## Bakåtknapp på Priser/Butik-info, och Butiken syns nu i huvudmenyn
+
+- `/priser` och `/butik-info` hade en egen, enklare header utan
+  bakåtlänk - bytt ut mot samma `AppHeader` som resten av sajten
+  använder, så en "← Tillbaka"-länk finns nu där också.
+- **"Butiken"** syns nu som en egen länk i huvudmenyn på dashboard och
+  bläddra-sidan, bredvid Matchningar/Vem gillar dig/Profilbesökare -
+  inte bara en liten textlänk under nivå-sektionen som innan.
+
 ## Om något strular
 
 - **"Cannot find module '@prisma/client'"** → du missade steg 4, kör

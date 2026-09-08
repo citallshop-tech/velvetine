@@ -3,7 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/prisma";
 import { pickLocalized } from "@/lib/localizedField";
 import { AppFooter } from "@/components/AppFooter";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { AppHeader } from "@/components/AppHeader";
 
 // Perks aren't stored in the database - they're implemented in code
 // logic across several files (discovery ranking, incognito route, etc).
@@ -40,19 +40,13 @@ export default async function PricingPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations("Pricing");
-  const c = await getTranslations("Common");
 
   const tiers = await prisma.tier.findMany({ orderBy: { level: "asc" } });
   const priceFormatter = new Intl.NumberFormat(locale === "en" ? "en-US" : "sv-SE");
 
   return (
     <div className="min-h-screen px-8 md:px-16 py-12">
-      <header className="flex items-center justify-between mb-12">
-        <Link href="/" className="font-display italic text-xl text-ivory">
-          {c("logotype")}
-        </Link>
-        <LanguageSwitcher />
-      </header>
+      <AppHeader logoHref="/" backHref="/" />
 
       <div className="max-w-2xl">
         <h1 className="font-display text-3xl text-ivory mb-2">{t("title")}</h1>

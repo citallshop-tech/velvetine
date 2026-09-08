@@ -179,6 +179,9 @@ export default async function DiscoverPage({
               <Link href="/visitors" className="text-sm text-ivory-muted hover:text-gold">
                 {h("visitors")}
               </Link>
+              <Link href="/store" className="text-sm text-ivory-muted hover:text-gold">
+                {h("store")}
+              </Link>
               {viewer.isAdmin && (
                 <Link href="/admin" className="text-sm text-gold hover:text-gold-bright">
                   {h("admin")}
