@@ -6,6 +6,11 @@ import { AppFooter } from "@/components/AppFooter";
 import { AppHeader } from "@/components/AppHeader";
 import { getSessionUserId } from "@/lib/auth";
 
+// This page reads login state per visitor - without this, Next.js could
+// statically render it once (with no session) and serve that same
+// "logged out" version to everyone, regardless of who's actually visiting.
+export const dynamic = "force-dynamic";
+
 // Perks aren't stored in the database - they're implemented in code
 // logic across several files (discovery ranking, incognito route, etc).
 // This list is the human-readable summary of that logic, kept here in

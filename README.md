@@ -1126,6 +1126,16 @@ inloggad tar den dig till dashboard, utloggad till startsidan. Samma
 fix på knapparna längst ner ("Bli medlem"/"Logga in för att köpa") -
 visar rätt handling beroende på om du redan är inloggad.
 
+## Rättat: bakåtknappen "loggade ut" beroende på statisk sidcachning
+
+Bekräftat att fixet från förra omgången var rätt LOGIK, men Next.js
+kunde ha byggt `/priser` och `/butik-info` som **statiska** sidor -
+byggda en gång, samma resultat för alla besökare - eftersom sidorna
+inte tidigare hade något som tvingade dem att räknas ut per besök.
+Om sidan byggdes utan en inloggad session skulle ALLA se den
+"utloggade" varianten, oavsett vem som faktiskt besökte den efteråt.
+Nu tvingade till att alltid räknas ut på riktigt, för varje besök.
+
 ## Om något strular
 
 - **"Cannot find module '@prisma/client'"** → du missade steg 4, kör

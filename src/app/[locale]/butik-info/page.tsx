@@ -6,6 +6,10 @@ import { AppFooter } from "@/components/AppFooter";
 import { AppHeader } from "@/components/AppHeader";
 import { getSessionUserId } from "@/lib/auth";
 
+// Same reasoning as priser/page.tsx - reads login state per visitor,
+// must never be statically cached across different people.
+export const dynamic = "force-dynamic";
+
 export default async function StoreInfoPage({
   params,
 }: {
