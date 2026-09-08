@@ -30,7 +30,6 @@ export function InstallPrompt() {
     if (isStandalone()) return;
 
     if (isIos()) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- reads navigator/matchMedia, browser-only checks that don't exist during SSR
       setEligible("ios");
       return;
     }

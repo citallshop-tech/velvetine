@@ -39,8 +39,6 @@ export function ChatThread({
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- standard client-only mount check, needed because document.body doesn't exist during SSR
   useEffect(() => setMounted(true), []);
 
   // Polling instead of a manual refresh button - checks for new

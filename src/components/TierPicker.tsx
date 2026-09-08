@@ -92,7 +92,6 @@ export function TierPicker({
     }
 
     if (res.ok && data.url) {
-      // eslint-disable-next-line react-hooks/immutability -- window.location is a browser global, not React state; a full navigation to Stripe's hosted checkout is required here, not client-side routing
       window.location.href = data.url;
       return;
     }

@@ -134,7 +134,6 @@ export function CookieConsentBanner() {
 
   useEffect(() => {
     if (!hasConsentCookie()) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- reads document.cookie, a browser-only API that doesn't exist during SSR
       setVisible(true);
     }
     setAnalyticsEnabled(getAnalyticsConsent());

@@ -125,7 +125,6 @@ export function ProfileCard({ data }: { data: ProfileCardData }) {
 
   const [lightbox, setLightbox] = useState<{ url: string; caption: string } | null>(null);
   const [mounted, setMounted] = useState(false);
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- standard client-only mount check, needed because document.body doesn't exist during SSR
   useEffect(() => setMounted(true), []);
 
   function prevPhoto(e: React.MouseEvent) {
