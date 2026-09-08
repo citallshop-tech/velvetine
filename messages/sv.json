@@ -202,12 +202,14 @@
     "subtitle": "Vad varje medlemsnivå faktiskt ger dig - inte bara ett pris.",
     "perMonth": "kr/mån",
     "requiresApplication": "Kräver godkänd ansökan (godkänns direkt om kontot är i god ordning)",
-    "cta": "Bli medlem"
+    "cta": "Bli medlem",
+    "ctaLoggedIn": "Se dina nivåer"
   },
   "StoreInfo": {
     "title": "Butiken",
     "subtitle": "Köpbara ramar för din profilbild - engångsköp, separat från din medlemsnivå. Syns för alla som ser din profil.",
-    "cta": "Logga in för att köpa"
+    "cta": "Logga in för att köpa",
+    "ctaLoggedIn": "Gå till butiken"
   },
   "Upgrade": {
     "title": "Välj din nivå",

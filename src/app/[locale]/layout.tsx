@@ -26,6 +26,7 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: "Velvetine",
   description: "Ett medlemskap, inte en app att swipa i.",
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
       { url: "/icons/icon-32.png", sizes: "32x32", type: "image/png" },

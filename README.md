@@ -1110,6 +1110,22 @@ finns kvar som referens under bilden.
   bläddra-sidan, bredvid Matchningar/Vem gillar dig/Profilbesökare -
   inte bara en liten textlänk under nivå-sektionen som innan.
 
+## Manifestet var aldrig kopplat in — löser installationsproblemet
+
+Hittade det: `manifest.ts`-filen fanns och genererade rätt data, men
+sidans `<head>` refererade den aldrig explicit. Chrome kunde alltså
+aldrig upptäcka att sidan går att installera, oavsett vad service
+workern gjorde. Fixat med en rad i metadata-objektet.
+
+## Bakåtknappen kändes som utloggning — nu smart
+
+"← Tillbaka" på `/priser` och `/butik-info` gick alltid till den
+publika startsidan, som inte visar något om att man redan är inloggad
+- kändes som en utloggning även om sessionen var helt intakt. Nu:
+inloggad tar den dig till dashboard, utloggad till startsidan. Samma
+fix på knapparna längst ner ("Bli medlem"/"Logga in för att köpa") -
+visar rätt handling beroende på om du redan är inloggad.
+
 ## Om något strular
 
 - **"Cannot find module '@prisma/client'"** → du missade steg 4, kör

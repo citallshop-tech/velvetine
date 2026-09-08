@@ -202,12 +202,14 @@
     "subtitle": "What each membership tier actually gives you - not just a price.",
     "perMonth": "SEK/mo",
     "requiresApplication": "Requires an approved application (approved instantly if the account is in good standing)",
-    "cta": "Become a member"
+    "cta": "Become a member",
+    "ctaLoggedIn": "See your tiers"
   },
   "StoreInfo": {
     "title": "Store",
     "subtitle": "Purchasable frames for your profile photo - one-time purchase, separate from your membership tier. Visible to anyone who sees your profile.",
-    "cta": "Log in to buy"
+    "cta": "Log in to buy",
+    "ctaLoggedIn": "Go to the store"
   },
   "Upgrade": {
     "title": "Choose your tier",

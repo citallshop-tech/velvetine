@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { pickLocalized } from "@/lib/localizedField";
 import { AppFooter } from "@/components/AppFooter";
 import { AppHeader } from "@/components/AppHeader";
+import { getSessionUserId } from "@/lib/auth";
 
 export default async function StoreInfoPage({
   params,
@@ -12,13 +13,14 @@ export default async function StoreInfoPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations("StoreInfo");
+  const isLoggedIn = Boolean(await getSessionUserId());
 
   const items = await prisma.storeItem.findMany({ where: { active: true }, orderBy: { order: "asc" } });
   const priceFormatter = new Intl.NumberFormat(locale === "en" ? "en-US" : "sv-SE");
 
   return (
     <div className="min-h-screen px-8 md:px-16 py-12">
-      <AppHeader logoHref="/" backHref="/" />
+      <AppHeader logoHref="/" backHref={isLoggedIn ? "/dashboard" : "/"} />
 
       <div className="max-w-2xl">
         <h1 className="font-display text-3xl text-ivory mb-2">{t("title")}</h1>
@@ -46,8 +48,8 @@ export default async function StoreInfoPage({
         </div>
 
         <div className="mt-10">
-          <Link href="/login" className="text-gold hover:text-gold-bright">
-            {t("cta")} →
+          <Link href={isLoggedIn ? "/store" : "/login"} className="text-gold hover:text-gold-bright">
+            {isLoggedIn ? t("ctaLoggedIn") : t("cta")} →
           </Link>
         </div>
 
