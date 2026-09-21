@@ -39,7 +39,7 @@ export default async function UpgradePage({
 
   const serializedTiers = tiers.map((tier) => ({
     id: tier.id,
-    name: pickLocalized(locale, tier.name, tier.nameEn),
+    name: pickLocalized(locale, tier.name, tier.nameEn, tier.nameDe, tier.nameEs),
     level: tier.level,
     priceSek: tier.priceMonthlySek / 100,
     requiresApplication: tier.requiresApplication,

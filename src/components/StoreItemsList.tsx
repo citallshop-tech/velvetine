@@ -2,23 +2,35 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
+
+export type StoreCategory = "FRAME" | "CHAT_THEME" | "PROFILE_BACKGROUND" | "DIGITAL_GIFT";
 
 interface StoreItemData {
   id: string;
   name: string;
   description: string | null;
   priceSek: number;
+  category: StoreCategory;
   frameColor: string;
   frameStyle: string;
+  chatBubbleColor: string | null;
+  chatBackgroundColor: string | null;
+  backgroundGradient: string | null;
+  giftEmoji: string | null;
   owned: boolean;
   equipped: boolean;
   purchasable: boolean;
 }
 
+// TILLAGD 2026-09-21 - vilka kategorier man "tar på sig" (en i taget, kan
+// ta av) kontra bara äger och använder på annat sätt. DIGITAL_GIFT hör
+// till den andra gruppen - se kommentaren vid CATEGORIES i equip/route.ts.
+const EQUIPPABLE_CATEGORIES: StoreCategory[] = ["FRAME", "CHAT_THEME", "PROFILE_BACKGROUND"];
+
 function FramePreview({ color, style }: { color: string; style: string }) {
   const width = style === "double-glow" ? 6 : 4;
-  const glow = style === "double-glow" ? 20 : style === "glow" ? 12 : 0;
+  const glow = style === "double-glow" ? 20 : style === "glow" || style === "shimmer" ? 12 : 0;
   const shadow = [
     `inset 0 0 0 ${width}px ${color}`,
     style === "double-glow" ? `inset 0 0 0 ${width + 3}px ${color}33` : null,
@@ -29,16 +41,76 @@ function FramePreview({ color, style }: { color: string; style: string }) {
 
   return (
     <div
-      className="w-16 h-16 rounded-full bg-surface-raised shrink-0"
+      className={`w-16 h-16 rounded-full bg-surface-raised shrink-0 ${
+        style === "shimmer" ? "animate-frame-shimmer" : ""
+      }`}
       style={{ boxShadow: shadow }}
     />
   );
 }
 
-export function StoreItemsList({ items }: { items: StoreItemData[] }) {
+function ChatThemePreview({
+  bubbleColor,
+  backgroundColor,
+}: {
+  bubbleColor: string;
+  backgroundColor: string;
+}) {
+  return (
+    <div
+      className="w-16 h-16 rounded-sm shrink-0 flex items-center justify-center p-1.5"
+      style={{ backgroundColor }}
+    >
+      <div className="w-full h-3 rounded-sm" style={{ backgroundColor: bubbleColor }} />
+    </div>
+  );
+}
+
+// TILLAGD 2026-09-21 - förhandsvisning för de två nya kategorierna.
+function BackgroundPreview({ gradient }: { gradient: string }) {
+  return (
+    <div
+      className="w-16 h-16 rounded-sm shrink-0 border border-border/60"
+      style={{ background: gradient }}
+    />
+  );
+}
+
+function GiftPreview({ emoji }: { emoji: string }) {
+  return (
+    <div className="w-16 h-16 rounded-sm shrink-0 bg-surface-raised flex items-center justify-center text-3xl">
+      {emoji}
+    </div>
+  );
+}
+
+export function StoreItemsList({
+  items,
+  category,
+}: {
+  items: StoreItemData[];
+  category: StoreCategory;
+}) {
   const t = useTranslations("Store");
   const router = useRouter();
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  // TILLAGD 2026-09-21 - kunden måste uttryckligen bekräfta pris/vara och
+  // villkoren (inkl. att ångerrätten faller bort vid digitalt innehåll som
+  // levereras direkt) innan köpknappen går att klicka på. Ren
+  // frontend-spärr - rör inte checkout/route.ts eller något Stripe-anrop.
+  const [confirmedIds, setConfirmedIds] = useState<Set<string>>(new Set());
+
+  function toggleConfirm(itemId: string) {
+    setConfirmedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(itemId)) {
+        next.delete(itemId);
+      } else {
+        next.add(itemId);
+      }
+      return next;
+    });
+  }
 
   async function buy(itemId: string) {
     setLoadingId(itemId);
@@ -60,53 +132,112 @@ export function StoreItemsList({ items }: { items: StoreItemData[] }) {
     await fetch("/api/store/equip", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ storeItemId: currentlyEquipped ? null : itemId }),
+      body: JSON.stringify({ storeItemId: currentlyEquipped ? null : itemId, category }),
     });
     setLoadingId(null);
     router.refresh();
   }
 
+  if (items.length === 0) {
+    return <p className="text-sm text-ivory-muted mb-6">{t("noItems")}</p>;
+  }
+
   return (
     <div className="flex flex-col gap-3">
-      {items.map((item) => (
-        <div
-          key={item.id}
-          className={`border rounded-sm p-4 flex items-center gap-4 ${
-            item.equipped ? "border-gold bg-surface-raised" : "border-border bg-surface"
-          }`}
-        >
-          <FramePreview color={item.frameColor} style={item.frameStyle} />
-          <div className="flex-1 min-w-0">
-            <p className="text-ivory">{item.name}</p>
-            {item.description && <p className="text-xs text-ivory-muted">{item.description}</p>}
-            <p className="text-sm text-gold mt-1">
-              {item.owned ? (item.equipped ? t("equipped") : t("owned")) : `${item.priceSek} kr`}
-            </p>
-          </div>
+      {items.map((item) => {
+        const isEquippable = EQUIPPABLE_CATEGORIES.includes(item.category);
+        // TILLAGD 2026-09-21 - köpknappen kräver att kunden bekräftat
+        // pris/vara + villkoren (se checkboxen nedan) för varor som inte
+        // redan ägs. Utrustningsknappen (för redan ägda varor) berörs inte.
+        const needsConfirmation = !item.owned;
+        const confirmed = confirmedIds.has(item.id);
 
-          {item.owned ? (
-            <button
-              onClick={() => toggleEquip(item.id, item.equipped)}
-              disabled={loadingId === item.id}
-              className={`px-4 py-2 rounded-sm text-sm border shrink-0 disabled:opacity-50 ${
-                item.equipped
-                  ? "border-border text-ivory-muted hover:border-gold"
-                  : "border-gold text-ivory hover:bg-surface-raised"
-              }`}
-            >
-              {item.equipped ? t("unequip") : t("equip")}
-            </button>
-          ) : (
-            <button
-              onClick={() => buy(item.id)}
-              disabled={!item.purchasable || loadingId === item.id}
-              className="px-4 py-2 rounded-sm text-sm border border-gold text-ivory hover:bg-surface-raised disabled:opacity-50 shrink-0"
-            >
-              {loadingId === item.id ? t("buying") : t("buy")}
-            </button>
-          )}
-        </div>
-      ))}
+        return (
+          <div
+            key={item.id}
+            className={`border rounded-sm p-4 flex flex-col gap-3 ${
+              item.equipped ? "border-gold bg-surface-raised" : "border-border bg-surface"
+            }`}
+          >
+            <div className="flex items-center gap-4">
+              {item.category === "FRAME" && (
+                <FramePreview color={item.frameColor} style={item.frameStyle} />
+              )}
+              {item.category === "CHAT_THEME" && (
+                <ChatThemePreview
+                  bubbleColor={item.chatBubbleColor ?? "#5a2f3f"}
+                  backgroundColor={item.chatBackgroundColor ?? "#15100d"}
+                />
+              )}
+              {item.category === "PROFILE_BACKGROUND" && (
+                <BackgroundPreview gradient={item.backgroundGradient ?? "#241c17"} />
+              )}
+              {item.category === "DIGITAL_GIFT" && <GiftPreview emoji={item.giftEmoji ?? "🎁"} />}
+
+              <div className="flex-1 min-w-0">
+                <p className="text-ivory">{item.name}</p>
+                {item.description && <p className="text-xs text-ivory-muted">{item.description}</p>}
+                <p className="text-sm text-gold mt-1">
+                  {item.owned ? (item.equipped ? t("equipped") : t("owned")) : `${item.priceSek} kr`}
+                </p>
+              </div>
+
+              {isEquippable ? (
+                item.owned ? (
+                  <button
+                    onClick={() => toggleEquip(item.id, item.equipped)}
+                    disabled={loadingId === item.id}
+                    className={`px-4 py-2 rounded-sm text-sm border shrink-0 disabled:opacity-50 ${
+                      item.equipped
+                        ? "border-border text-ivory-muted hover:border-gold"
+                        : "border-gold text-ivory hover:bg-surface-raised"
+                    }`}
+                  >
+                    {item.equipped ? t("unequip") : t("equip")}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => buy(item.id)}
+                    disabled={!item.purchasable || !confirmed || loadingId === item.id}
+                    className="px-4 py-2 rounded-sm text-sm border border-gold text-ivory hover:bg-surface-raised disabled:opacity-50 shrink-0"
+                  >
+                    {loadingId === item.id ? t("buying") : t("buy")}
+                  </button>
+                )
+              ) : // DIGITAL_GIFT - inget att utrusta, bara äga och sen skicka i
+              // chatten (se ChatThread.tsx), så bara ett statiskt "Ägs"-läge här.
+              item.owned ? (
+                <span className="px-4 py-2 text-sm text-gold shrink-0">{t("owned")}</span>
+              ) : (
+                <button
+                  onClick={() => buy(item.id)}
+                  disabled={!item.purchasable || !confirmed || loadingId === item.id}
+                  className="px-4 py-2 rounded-sm text-sm border border-gold text-ivory hover:bg-surface-raised disabled:opacity-50 shrink-0"
+                >
+                  {loadingId === item.id ? t("buying") : t("buy")}
+                </button>
+              )}
+            </div>
+
+            {needsConfirmation && item.purchasable && (
+              <label className="flex items-start gap-2 text-xs text-ivory-muted pl-1">
+                <input
+                  type="checkbox"
+                  checked={confirmed}
+                  onChange={() => toggleConfirm(item.id)}
+                  className="mt-0.5 shrink-0"
+                />
+                <span>
+                  {t("confirmPurchase")}{" "}
+                  <Link href="/villkor" target="_blank" className="underline hover:text-gold">
+                    {t("termsLinkLabel")}
+                  </Link>
+                </span>
+              </label>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

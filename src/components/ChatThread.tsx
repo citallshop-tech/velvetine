@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -10,8 +11,16 @@ interface Message {
   id: string;
   content: string | null;
   imageUrl: string | null;
+  // TILLAGD 2026-09-21 - digitala presenter (se claude/velvetine-status.md).
+  giftEmoji?: string | null;
   senderId: string;
   createdAt: string;
+}
+
+interface OwnedGift {
+  id: string;
+  emoji: string;
+  name: string;
 }
 
 export function ChatThread({
@@ -21,6 +30,8 @@ export function ChatThread({
   isActive: initialIsActive,
   hasReadReceipts = false,
   otherLastReadAt: initialOtherLastReadAt = null,
+  chatTheme = null,
+  ownedGifts = [],
 }: {
   matchId: string;
   currentUserId: string;
@@ -28,6 +39,8 @@ export function ChatThread({
   isActive: boolean;
   hasReadReceipts?: boolean;
   otherLastReadAt?: string | null;
+  chatTheme?: { bubbleColor: string; backgroundColor: string } | null;
+  ownedGifts?: OwnedGift[];
 }) {
   const t = useTranslations("Chat");
   const [messages, setMessages] = useState(initialMessages);
@@ -37,6 +50,7 @@ export function ChatThread({
   const [sending, setSending] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [giftPickerOpen, setGiftPickerOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => setMounted(true), []);
@@ -74,6 +88,25 @@ export function ChatThread({
       const data = await res.json();
       setMessages((prev) => [...prev, data.message]);
       setText("");
+    }
+  }
+
+  // TILLAGD 2026-09-21 - skicka en ägd digital present (se
+  // claude/velvetine-status.md). Samma POST-endpoint som text/bild, bara
+  // giftStoreItemId istället för content/imageUrl.
+  async function sendGift(storeItemId: string) {
+    if (sending) return;
+    setGiftPickerOpen(false);
+    setSending(true);
+    const res = await fetch(`/api/matches/${matchId}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ giftStoreItemId: storeItemId }),
+    });
+    setSending(false);
+    if (res.ok) {
+      const data = await res.json();
+      setMessages((prev) => [...prev, data.message]);
     }
   }
 
@@ -115,7 +148,10 @@ export function ChatThread({
 
   return (
     <>
-    <div className="flex-1 flex flex-col max-w-md mx-auto w-full px-4 py-6">
+    <div
+      className="flex-1 flex flex-col max-w-md mx-auto w-full px-4 py-6"
+      style={chatTheme ? { backgroundColor: chatTheme.backgroundColor } : undefined}
+    >
       <div className="flex-1 flex flex-col gap-3 mb-4">
         {messages.map((m) => {
           const isMine = m.senderId === currentUserId;
@@ -127,7 +163,13 @@ export function ChatThread({
 
           return (
             <div key={m.id} className={isMine ? "self-end" : "self-start"}>
-              {m.imageUrl ? (
+              {m.giftEmoji ? (
+                // TILLAGD 2026-09-21 - presentbubbla: stor emoji, ingen
+                // vanlig chattbubbla runt, ett litet studs vid ankomst.
+                <div className="text-4xl px-2 animate-gift-pop" role="img" aria-label="Present">
+                  {m.giftEmoji}
+                </div>
+              ) : m.imageUrl ? (
                 <button
                   type="button"
                   onClick={() => setLightboxUrl(m.imageUrl)}
@@ -144,8 +186,13 @@ export function ChatThread({
               ) : (
                 <div
                   className={`max-w-[75%] px-4 py-2 rounded-sm text-sm ${
-                    isMine ? "bg-wine text-ivory" : "bg-surface text-ivory border border-border"
+                    isMine
+                      ? chatTheme
+                        ? "text-ivory"
+                        : "bg-wine text-ivory"
+                      : "bg-surface text-ivory border border-border"
                   }`}
+                  style={isMine && chatTheme ? { backgroundColor: chatTheme.bubbleColor } : undefined}
                 >
                   {m.content}
                 </div>
@@ -183,6 +230,48 @@ export function ChatThread({
           >
             📷
           </button>
+
+          {/* TILLAGD 2026-09-21 - gåvo-väljare (se claude/velvetine-status.md). */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setGiftPickerOpen((open) => !open)}
+              disabled={sending}
+              className="px-3 rounded-sm border border-border text-ivory-muted hover:border-gold disabled:opacity-50 transition-colors"
+              aria-label={t("sendGift")}
+            >
+              🎁
+            </button>
+            {giftPickerOpen && (
+              <div className="absolute bottom-full mb-2 left-0 w-56 bg-surface border border-border rounded-sm shadow-lg p-2 z-20">
+                <p className="text-xs text-ivory-muted px-1 pb-1.5">{t("giftPickerTitle")}</p>
+                {ownedGifts.length === 0 ? (
+                  <div className="px-1 py-1.5">
+                    <p className="text-xs text-ivory-muted mb-2">{t("noGiftsOwned")}</p>
+                    <Link href="/store" className="text-xs text-gold hover:text-gold-bright">
+                      {t("goToStore")} →
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-0.5 max-h-48 overflow-y-auto">
+                    {ownedGifts.map((gift) => (
+                      <button
+                        key={gift.id}
+                        type="button"
+                        onClick={() => sendGift(gift.id)}
+                        disabled={sending}
+                        className="flex items-center gap-2 px-2 py-1.5 rounded-sm text-left hover:bg-surface-raised disabled:opacity-50 transition-colors"
+                      >
+                        <span className="text-xl">{gift.emoji}</span>
+                        <span className="text-sm text-ivory">{gift.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}

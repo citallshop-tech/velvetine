@@ -1,4 +1,22 @@
 import { prisma } from "@/lib/prisma";
+import { countriesInRegion, type Region } from "@/lib/countries";
+
+// TILLAGT 2026-09-21 - explicit sök-/filterläge i Bläddra, på Christoffers
+// uttryckliga önskemål ("kunna hitta varandra lätt genom att söka på länder
+// och områden"). Skiljer sig från den befintliga soft-scoring-logiken
+// (samma-land-bonusen längre ned) på ett viktigt sätt: ett EXPLICIT val i
+// UI:t (country/region) är alltid ett hårt filter, oavsett vad viewern satt
+// för openToInternational - att aktivt söka på "Japan" ska visa Japan, inte
+// tyst blandas ut eller stängas av för att viewerns eget land är Sverige.
+export interface DiscoveryFilters {
+  country?: string;
+  region?: Region;
+  // Fritextsökning på stad/kommun (delsträng, skiftlägesokänslig) - se
+  // DiscoverFilters.tsx för varför det här är fritext och inte en riktig
+  // kommun-lista. Kombineras med country/region ovan (båda gäller
+  // samtidigt, AND) snarare än att ersätta dem.
+  city?: string;
+}
 
 // How much bigger a pool to pull before ranking and trimming to `limit` -
 // ranking a pool the same size as what we show would have nothing to
@@ -103,7 +121,11 @@ function matchesHardFilter(
   return true;
 }
 
-export async function getDiscoveryCandidates(currentUserId: string, limit = 20) {
+export async function getDiscoveryCandidates(
+  currentUserId: string,
+  limit = 20,
+  filters: DiscoveryFilters = {}
+) {
   const me = await prisma.user.findUnique({
     where: { id: currentUserId },
     select: {
@@ -115,6 +137,7 @@ export async function getDiscoveryCandidates(currentUserId: string, limit = 20) 
       prefBodyTypes: true,
       prefHairColors: true,
       locationCountry: true,
+      openToInternational: true,
       tier: { select: { level: true } },
     },
   });
@@ -143,6 +166,36 @@ export async function getDiscoveryCandidates(currentUserId: string, limit = 20) 
 
   const poolSize = Math.min(limit * CANDIDATE_POOL_MULTIPLIER, MAX_POOL);
 
+  // Location filtering - three cases, in priority order:
+  // 1. An explicit search (filters.country / filters.region from the UI) -
+  //    always a hard filter, regardless of openToInternational. Searching
+  //    for a specific place is an unambiguous request to see exactly that.
+  // 2. No explicit search, but the viewer has switched openToInternational
+  //    off - restrict their default feed to their own country. Only
+  //    possible if they've actually set a locationCountry themselves;
+  //    can't restrict to "their country" if it's unknown, so that case
+  //    falls through to "no filter" rather than showing an empty feed.
+  // 3. No explicit search and openToInternational is on (the default,
+  //    unchanged from before this feature existed) - no location filter at
+  //    all, matching every existing user's current behavior exactly.
+  const locationWhere: {
+    locationCountry?: string | { in: string[] };
+    locationCity?: { contains: string; mode: "insensitive" };
+  } = {};
+  if (filters.country) {
+    locationWhere.locationCountry = filters.country;
+  } else if (filters.region) {
+    locationWhere.locationCountry = { in: countriesInRegion(filters.region).map((c) => c.code) };
+  } else if (me.openToInternational === false && me.locationCountry) {
+    locationWhere.locationCountry = me.locationCountry;
+  }
+  // Fritextsökning på stad/kommun - gäller UTÖVER land/område ovan, inte
+  // istället för. "Nacka" i Sverige-filtret ger bara Nacka-profiler i
+  // Sverige, inte alla platser som råkar innehålla "Nacka" globalt.
+  if (filters.city) {
+    locationWhere.locationCity = { contains: filters.city, mode: "insensitive" };
+  }
+
   // NOTE: if hiddenTierIds is non-empty, users with no tier assigned yet
   // (tierId null - true for everyone until Stripe checkout is wired in)
   // won't match a `notIn` filter due to how SQL handles NULL comparisons,
@@ -156,6 +209,7 @@ export async function getDiscoveryCandidates(currentUserId: string, limit = 20) 
       gender: { in: me.seekingGender },
       seekingGender: { has: me.gender },
       tierId: hiddenTierIds.length > 0 ? { notIn: hiddenTierIds } : undefined,
+      ...locationWhere,
     },
     include: {
       tier: true,

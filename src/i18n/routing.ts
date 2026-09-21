@@ -1,7 +1,7 @@
 import { defineRouting } from "next-intl/routing";
 
 export const routing = defineRouting({
-  locales: ["sv", "en"],
+  locales: ["sv", "en", "de", "es"],
   defaultLocale: "sv",
   // next-intl sets this automatically whenever someone switches language
   // via the site's language switcher, so a returning visitor lands back

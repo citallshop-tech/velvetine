@@ -21,6 +21,7 @@ interface Candidate {
   tierLevel: number | null;
   verified: boolean;
   equippedFrame: { frameColor: string; frameStyle: string } | null;
+  equippedBackground: { gradient: string } | null;
   promptAnswers: { id: string; answer: string; prompt: { question: string } }[];
   showcaseItems: { id: string; label: string; description: string | null; photoUrl: string | null }[];
   photoUrls: string[];
@@ -151,6 +152,7 @@ export function DiscoverDeck({
           tierLevel: current.tierLevel,
           verified: current.verified,
           equippedFrame: current.equippedFrame,
+          equippedBackground: current.equippedBackground,
           bio: current.bio,
           heightCm: current.heightCm,
           occupation: current.occupation,

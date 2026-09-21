@@ -96,7 +96,7 @@ export default async function LikesPage({
     userId: s.fromUser.id,
     displayName: s.fromUser.displayName,
     tier: s.fromUser.tier
-      ? pickLocalized(locale, s.fromUser.tier.name, s.fromUser.tier.nameEn)
+      ? pickLocalized(locale, s.fromUser.tier.name, s.fromUser.tier.nameEn, s.fromUser.tier.nameDe, s.fromUser.tier.nameEs)
       : null,
     photoUrl: s.fromUser.photos[0]?.url ?? null,
     verified: s.fromUser.verified,

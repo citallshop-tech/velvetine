@@ -20,7 +20,7 @@ export default async function Home({
   const priceFormatter = new Intl.NumberFormat(locale === "en" ? "en-US" : "sv-SE");
 
   const TIERS = dbTiers.map((tier) => ({
-    name: pickLocalized(locale, tier.name, tier.nameEn),
+    name: pickLocalized(locale, tier.name, tier.nameEn, tier.nameDe, tier.nameEs),
     intensity: intensityByLevel[tier.level] ?? 0.5,
     symbol: symbolByLevel[tier.level] ?? "",
     priceSek: tier.priceMonthlySek / 100,

@@ -2,19 +2,56 @@ import { getTranslations } from "next-intl/server";
 import { Link, redirect } from "@/i18n/navigation";
 import { getSessionUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getDiscoveryCandidates } from "@/lib/discovery";
+import { getDiscoveryCandidates, type DiscoveryFilters } from "@/lib/discovery";
 import { pickLocalized } from "@/lib/localizedField";
+import { countryLabel, REGION_ORDER, type Region } from "@/lib/countries";
 import { DiscoverDeck } from "@/components/discover/DiscoverDeck";
+import { DiscoverFilters } from "@/components/discover/DiscoverFilters";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { NavBadge } from "@/components/NavBadge";
 import { getUnreadMatchesCount, getNewLikesCount } from "@/lib/unread";
 import { AppFooter } from "@/components/AppFooter";
 import { AppHeader } from "@/components/AppHeader";
 
+// TILLAGT 2026-09-21 - sök på land/område i Bläddra (se DiscoverFilters.tsx
+// och src/lib/discovery.ts). "country"/"region" i URL:en (query params) i
+// stället för egen state/API-anrop, eftersom sidan redan är en async server-
+// komponent som hämtar kandidater på serversidan - en vanlig länk-navigering
+// (GET) räcker, ingen extra klient-fetch eller route krävs.
+function parseFilters(searchParams: Record<string, string | string[] | undefined>): DiscoveryFilters {
+  const countryRaw = searchParams.country;
+  const regionRaw = searchParams.region;
+  const cityRaw = searchParams.city;
+  const country = typeof countryRaw === "string" && countryRaw ? countryRaw : undefined;
+  const region =
+    typeof regionRaw === "string" && (REGION_ORDER as string[]).includes(regionRaw)
+      ? (regionRaw as Region)
+      : undefined;
+  const city = typeof cityRaw === "string" && cityRaw.trim() ? cityRaw.trim().slice(0, 100) : undefined;
+  // Ett specifikt land vinner om land och område båda råkar vara satta
+  // samtidigt. Stad/kommun gäller alltid utöver, oavsett vilket av de två.
+  // Fast returtyp (DiscoveryFilters) istället för att låta TS lägga ihop
+  // en union av olika objektformer från spreads nedan - annars klagar
+  // TypeScript på att t.ex. "city" inte säkert finns med på alla möjliga
+  // former av returvärdet.
+  const filters: DiscoveryFilters = {};
+  if (country) {
+    filters.country = country;
+  } else if (region) {
+    filters.region = region;
+  }
+  if (city) {
+    filters.city = city;
+  }
+  return filters;
+}
+
 export default async function DiscoverPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
   const userId = await getSessionUserId();
@@ -23,8 +60,10 @@ export default async function DiscoverPage({
     return;
   }
 
+  const filters = parseFilters(await searchParams);
+
   const [candidates, viewer] = await Promise.all([
-    getDiscoveryCandidates(userId),
+    getDiscoveryCandidates(userId, 20, filters),
     prisma.user.findUnique({
       where: { id: userId },
       select: { tier: { select: { level: true } }, emailVerified: true, isAdmin: true },
@@ -106,15 +145,6 @@ export default async function DiscoverPage({
     OTHER: p("hairColorOther"),
   };
 
-  const countryLabels: Record<string, string> = {
-    SE: p("countrySE"), NO: p("countryNO"), DK: p("countryDK"), FI: p("countryFI"),
-    IS: p("countryIS"), GB: p("countryGB"), DE: p("countryDE"), FR: p("countryFR"),
-    ES: p("countryES"), IT: p("countryIT"), NL: p("countryNL"), BE: p("countryBE"),
-    AT: p("countryAT"), CH: p("countryCH"), IE: p("countryIE"), PT: p("countryPT"),
-    PL: p("countryPL"), US: p("countryUS"), CA: p("countryCA"), AU: p("countryAU"),
-    OTHER: p("countryOTHER"),
-  };
-
   const equippedFrameIds = candidates
     .map((c) => c.equippedFrameId)
     .filter((id): id is string => id !== null);
@@ -130,6 +160,23 @@ export default async function DiscoverPage({
     return f ? { frameColor: f.frameColor, frameStyle: f.frameStyle } : null;
   }
 
+  // TILLAGD 2026-09-21 - samma lookup-mönster som ramarna ovan, för
+  // PROFILE_BACKGROUND-varor (se claude/velvetine-status.md).
+  const equippedBackgroundIds = candidates
+    .map((c) => c.equippedBackgroundId)
+    .filter((id): id is string => id !== null);
+  const backgroundItems =
+    equippedBackgroundIds.length > 0
+      ? await prisma.storeItem.findMany({ where: { id: { in: equippedBackgroundIds } } })
+      : [];
+  const backgroundById = new Map(backgroundItems.map((b) => [b.id, b] as const));
+
+  function equippedBackgroundFor(equippedBackgroundId: string | null): { gradient: string } | null {
+    if (!equippedBackgroundId) return null;
+    const b = backgroundById.get(equippedBackgroundId);
+    return b?.backgroundGradient ? { gradient: b.backgroundGradient } : null;
+  }
+
   const serialized = candidates.map((c) => ({
     id: c.id,
     displayName: c.displayName,
@@ -140,17 +187,18 @@ export default async function DiscoverPage({
     bodyType: c.bodyType ? bodyTypeLabels[c.bodyType] : null,
     hairColor: c.hairColor ? hairColorLabels[c.hairColor] : null,
     locationCity: c.locationCity,
-    locationCountry: c.locationCountry ? countryLabels[c.locationCountry] ?? c.locationCountry : null,
+    locationCountry: countryLabel(c.locationCountry, locale),
     relationshipIntent: c.relationshipIntent ? intentLabels[c.relationshipIntent] : null,
-    tier: c.tier ? { name: pickLocalized(locale, c.tier.name, c.tier.nameEn) } : null,
+    tier: c.tier ? { name: pickLocalized(locale, c.tier.name, c.tier.nameEn, c.tier.nameDe, c.tier.nameEs) } : null,
     tierLevel: c.tier?.level ?? null,
     verified: c.verified,
     equippedFrame: equippedFrameFor(c.equippedFrameId),
+    equippedBackground: equippedBackgroundFor(c.equippedBackgroundId),
     blurred: (c.tier?.level ?? 0) > viewerTierLevel && !likedMeIds.has(c.id),
     promptAnswers: c.promptAnswers.map((pa) => ({
       id: pa.id,
       answer: pa.answer,
-      prompt: { question: pickLocalized(locale, pa.prompt.question, pa.prompt.questionEn) },
+      prompt: { question: pickLocalized(locale, pa.prompt.question, pa.prompt.questionEn, pa.prompt.questionDe, pa.prompt.questionEs) },
     })),
     showcaseItems: c.showcaseItems.map((item) => ({
       id: item.id,
@@ -189,6 +237,13 @@ export default async function DiscoverPage({
               )}
             </>
           }
+        />
+      </div>
+      <div className="max-w-md mx-auto">
+        <DiscoverFilters
+          activeCountry={filters.country ?? null}
+          activeRegion={filters.region ?? null}
+          activeCity={filters.city ?? null}
         />
       </div>
       <DiscoverDeck initialCandidates={serialized} viewerTierLevel={viewerTierLevel} />

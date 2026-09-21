@@ -54,3 +54,38 @@ h1, h2, h3, .font-display {
   background: var(--color-wine);
   color: var(--color-ivory);
 }
+
+/*
+  TILLAGD 2026-09-21 - lyx-tillbehör (se claude/velvetine-status.md):
+  animate-frame-shimmer används på Onyx/Pärlvit-ramarna (StoreItem.frameStyle
+  "shimmer") i både ProfileCard.tsx och StoreItemsList.tsx förhandsvisning -
+  en subtil, långsam ljusstyrke-puls så ramen känns "levande" utan att bli
+  gaudy eller distraherande. gift-pop används på presentbubblor i chatten
+  (ChatThread.tsx) - ett litet studs när en present dyker upp.
+  prefers-reduced-motion respekteras för båda.
+*/
+@keyframes frame-shimmer-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.35); }
+}
+
+.animate-frame-shimmer {
+  animation: frame-shimmer-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes gift-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  70% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-gift-pop {
+  animation: gift-pop 0.35s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-frame-shimmer,
+  .animate-gift-pop {
+    animation: none;
+  }
+}

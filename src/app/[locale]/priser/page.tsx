@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/prisma";
-import { pickLocalized } from "@/lib/localizedField";
+import { pickLocalized, localeToIntlTag } from "@/lib/localizedField";
 import { AppFooter } from "@/components/AppFooter";
 import { AppHeader } from "@/components/AppHeader";
 import { getSessionUserId } from "@/lib/auth";
@@ -16,26 +16,36 @@ export const dynamic = "force-dynamic";
 // This list is the human-readable summary of that logic, kept here in
 // one place so it can be updated deliberately alongside the code that
 // implements each perk, rather than drifting out of sync silently.
-const PERKS_BY_LEVEL: Record<number, { sv: string[]; en: string[] }> = {
+const PERKS_BY_LEVEL: Record<number, { sv: string[]; en: string[]; de: string[]; es: string[] }> = {
   1: {
     sv: ["Se vem som gillat dig", "Prioriterad synlighet i bläddra-flödet"],
     en: ["See who's liked you", "Priority visibility in the browse feed"],
+    de: ["Sehen, wer dich mag", "Bevorzugte Sichtbarkeit im Entdecken-Feed"],
+    es: ["Ver quién te ha dado like", "Visibilidad prioritaria en el feed de exploración"],
   },
   2: {
     sv: ["Allt i Ingång", "Inkognitoläge", "Boost - synas överst i 30 min, en gång/dygn"],
     en: ["Everything in Entry", "Incognito mode", "Boost - top of everyone's feed for 30 min, once/day"],
+    de: ["Alles aus Einstieg", "Inkognito-Modus", "Boost - 30 Min. ganz oben im Feed aller, einmal pro Tag"],
+    es: ["Todo lo de Inicial", "Modo incógnito", "Impulso - arriba del feed de todos durante 30 min, una vez al día"],
   },
   3: {
     sv: ["Allt i Utvald", "Skarpa sökfilter (dina preferenser filtrerar, inte bara sorterar)", "Läskvitto i chatten"],
     en: ["Everything in Select", "Strict search filters (your preferences filter, not just sort)", "Read receipts in chat"],
+    de: ["Alles aus Select", "Strenge Suchfilter (deine Präferenzen filtern, nicht nur sortieren)", "Lesebestätigungen im Chat"],
+    es: ["Todo lo de Selecto", "Filtros de búsqueda estrictos (tus preferencias filtran, no solo ordenan)", "Confirmación de lectura en el chat"],
   },
   4: {
     sv: ["Allt i Reserverad", "Kräver godkänd ansökan", "Se alla som besökt din profil", "Meddela innan ömsesidig matchning"],
     en: ["Everything in Reserved", "Requires an approved application", "See everyone who's visited your profile", "Message before a mutual match"],
+    de: ["Alles aus Reserved", "Erfordert eine genehmigte Bewerbung", "Alle sehen, die dein Profil besucht haben", "Nachricht schreiben vor gegenseitigem Match"],
+    es: ["Todo lo de Reservado", "Requiere una solicitud aprobada", "Ver a todos los que han visitado tu perfil", "Enviar mensaje antes de la coincidencia mutua"],
   },
   5: {
     sv: ["Allt i Förstklassig", "Kräver godkänd ansökan", "Högsta prioriterade synlighet", "Mest exklusiva profilram och symbol"],
     en: ["Everything in Premier", "Requires an approved application", "Highest priority visibility", "Most exclusive profile frame and symbol"],
+    de: ["Alles aus Premier", "Erfordert eine genehmigte Bewerbung", "Höchste priorisierte Sichtbarkeit", "Exklusivster Profilrahmen und exklusivstes Symbol"],
+    es: ["Todo lo de Premier", "Requiere una solicitud aprobada", "Máxima visibilidad prioritaria", "Marco de perfil y símbolo más exclusivos"],
   },
 };
 
@@ -49,7 +59,7 @@ export default async function PricingPage({
   const t = await getTranslations("Pricing");
 
   const tiers = await prisma.tier.findMany({ orderBy: { level: "asc" } });
-  const priceFormatter = new Intl.NumberFormat(locale === "en" ? "en-US" : "sv-SE");
+  const priceFormatter = new Intl.NumberFormat(localeToIntlTag(locale));
 
   return (
     <div className="min-h-screen px-8 md:px-16 py-12">
@@ -62,13 +72,14 @@ export default async function PricingPage({
         <div className="flex flex-col gap-6">
           {tiers.map((tier) => {
             const perks = PERKS_BY_LEVEL[tier.level];
-            const perkList = locale === "en" ? perks?.en : perks?.sv;
+            const perkList =
+              locale === "en" || locale === "de" || locale === "es" ? perks?.[locale] : perks?.sv;
 
             return (
               <div key={tier.id} className="border border-border rounded-sm bg-surface p-6">
                 <div className="flex items-baseline justify-between mb-1">
                   <h2 className="text-ivory text-xl">
-                    {pickLocalized(locale, tier.name, tier.nameEn)}
+                    {pickLocalized(locale, tier.name, tier.nameEn, tier.nameDe, tier.nameEs)}
                   </h2>
                   <span className="text-gold">
                     {priceFormatter.format(tier.priceMonthlySek / 100)} {t("perMonth")}

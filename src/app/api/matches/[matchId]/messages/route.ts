@@ -17,8 +17,12 @@ export async function POST(
   const body = await request.json();
   const content = typeof body.content === "string" ? body.content.trim().slice(0, 2000) : "";
   const imageUrl = typeof body.imageUrl === "string" ? body.imageUrl : null;
+  // TILLAGD 2026-09-21 - digitala presenter (se claude/velvetine-status.md).
+  // Ett meddelande är antingen text, bild eller present - aldrig flera på
+  // en gång, precis som imageUrl redan var separat från content.
+  const giftStoreItemId = typeof body.giftStoreItemId === "string" ? body.giftStoreItemId : null;
 
-  if (!content && !imageUrl) {
+  if (!content && !imageUrl && !giftStoreItemId) {
     return NextResponse.json({ error: "Tomt meddelande." }, { status: 400 });
   }
 
@@ -30,8 +34,30 @@ export async function POST(
     return NextResponse.json({ error: "Konversationen är inte längre aktiv." }, { status: 400 });
   }
 
+  // En present måste faktiskt ägas (köpt i Butiken) för att kunna skickas -
+  // samma ägandekontroll som equip/route.ts redan gör för ramar/chattfärger,
+  // fast presenter "utrustas" aldrig, de bara skickas en gång per gång.
+  if (giftStoreItemId) {
+    const [owned, giftItem] = await Promise.all([
+      prisma.userStoreItem.findUnique({
+        where: { userId_storeItemId: { userId, storeItemId: giftStoreItemId } },
+      }),
+      prisma.storeItem.findUnique({ where: { id: giftStoreItemId } }),
+    ]);
+    if (!owned || !giftItem || giftItem.category !== "DIGITAL_GIFT") {
+      return NextResponse.json({ error: "Du äger inte den här presenten." }, { status: 403 });
+    }
+  }
+
   const message = await prisma.message.create({
-    data: { matchId, senderId: userId, content: content || null, imageUrl },
+    data: {
+      matchId,
+      senderId: userId,
+      content: content || null,
+      imageUrl,
+      giftStoreItemId,
+    },
+    include: { giftStoreItem: { select: { giftEmoji: true } } },
   });
 
   const isUserA = match.userAId === userId;
@@ -48,7 +74,11 @@ export async function POST(
 
   void sendPushToUser(recipientId, {
     title: sender?.displayName ?? "Nytt meddelande",
-    body: content ? content.slice(0, 100) : "📷 Skickade en bild",
+    body: content
+      ? content.slice(0, 100)
+      : message.giftStoreItem
+        ? `${message.giftStoreItem.giftEmoji ?? "🎁"} Skickade en present`
+        : "📷 Skickade en bild",
     url: `/matches/${matchId}`,
   });
 
@@ -83,6 +113,7 @@ export async function POST(
       id: message.id,
       content: message.content,
       imageUrl: message.imageUrl,
+      giftEmoji: message.giftStoreItem?.giftEmoji ?? null,
       senderId: message.senderId,
       createdAt: message.createdAt.toISOString(),
     },
@@ -107,7 +138,12 @@ export async function GET(
   const { matchId } = await params;
   const match = await prisma.match.findUnique({
     where: { id: matchId },
-    include: { messages: { orderBy: { createdAt: "asc" } } },
+    include: {
+      messages: {
+        orderBy: { createdAt: "asc" },
+        include: { giftStoreItem: { select: { giftEmoji: true } } },
+      },
+    },
   });
 
   if (!match || (match.userAId !== userId && match.userBId !== userId)) {
@@ -130,6 +166,7 @@ export async function GET(
       id: m.id,
       content: m.content,
       imageUrl: m.imageUrl,
+      giftEmoji: m.giftStoreItem?.giftEmoji ?? null,
       senderId: m.senderId,
       createdAt: m.createdAt.toISOString(),
     })),

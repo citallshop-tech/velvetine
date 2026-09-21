@@ -60,6 +60,12 @@ export async function PATCH(request: NextRequest) {
     data.locationCountry =
       typeof body.locationCountry === "string" ? body.locationCountry.trim().slice(0, 100) || null : null;
   }
+  // TILLAGD 2026-09-21 - se schema.prisma för hela resonemanget kring
+  // openToInternational. Inget enum-krav (bara boolean), så ingen
+  // validering mot en lista behövs här.
+  if ("openToInternational" in body) {
+    data.openToInternational = Boolean(body.openToInternational);
+  }
   if ("gender" in body && GENDERS.includes(body.gender)) {
     data.gender = body.gender;
   }

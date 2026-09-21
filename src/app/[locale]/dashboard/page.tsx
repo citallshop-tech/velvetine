@@ -117,7 +117,7 @@ export default async function DashboardPage({
         <section className="border border-border rounded-sm p-6 bg-surface mb-10">
           <h2 className="text-ivory mb-2">{t("tierSectionTitle")}</h2>
           {user.tier ? (
-            <p className="text-gold mb-3">{pickLocalized(locale, user.tier.name, user.tier.nameEn)}</p>
+            <p className="text-gold mb-3">{pickLocalized(locale, user.tier.name, user.tier.nameEn, user.tier.nameDe, user.tier.nameEs)}</p>
           ) : (
             <p className="text-ivory-muted mb-3">{t("noTier")}</p>
           )}

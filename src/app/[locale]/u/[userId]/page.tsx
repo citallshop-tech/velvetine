@@ -3,6 +3,7 @@ import { redirect } from "@/i18n/navigation";
 import { getSessionUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { pickLocalized } from "@/lib/localizedField";
+import { countryLabel } from "@/lib/countries";
 import { calculateAge } from "@/lib/age";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
@@ -60,6 +61,11 @@ export default async function ProfileViewPage({
     ? await prisma.storeItem.findUnique({ where: { id: target.equippedFrameId } })
     : null;
 
+  // TILLAGD 2026-09-21 - samma mönster som ramen ovan, för profilbakgrund.
+  const equippedBackgroundItem = target.equippedBackgroundId
+    ? await prisma.storeItem.findUnique({ where: { id: target.equippedBackgroundId } })
+    : null;
+
   const p = await getTranslations("Profile");
   const s = await getTranslations("Showcase");
   const viewerTierLevel = viewer?.tier?.level ?? 0;
@@ -106,11 +112,15 @@ export default async function ProfileViewPage({
           data={{
             displayName: target.displayName,
             age,
-            tierName: target.tier ? pickLocalized(locale, target.tier.name, target.tier.nameEn) : null,
+            tierName: target.tier ? pickLocalized(locale, target.tier.name, target.tier.nameEn, target.tier.nameDe, target.tier.nameEs) : null,
             tierLevel: target.tier?.level ?? null,
             equippedFrame: equippedFrameItem
               ? { frameColor: equippedFrameItem.frameColor, frameStyle: equippedFrameItem.frameStyle }
               : null,
+            equippedBackground:
+              equippedBackgroundItem && equippedBackgroundItem.backgroundGradient
+                ? { gradient: equippedBackgroundItem.backgroundGradient }
+                : null,
             verified: target.verified,
             bio: target.bio,
             heightCm: target.heightCm,
@@ -118,13 +128,17 @@ export default async function ProfileViewPage({
             bodyType: target.bodyType ? bodyTypeLabels[target.bodyType] : null,
             hairColor: target.hairColor ? hairColorLabels[target.hairColor] : null,
             locationCity: target.locationCity,
-            locationCountry: target.locationCountry,
+            // RÄTTAT 2026-09-21 - visade tidigare den råa landskoden (t.ex.
+            // "US") rakt av istället för ett riktigt landsnamn; discover-
+            // sidan gjorde redan rätt (översatte via en egen lokal karta).
+            // Nu samma källa (src/lib/countries.ts) på båda ställena.
+            locationCountry: countryLabel(target.locationCountry, locale),
             relationshipIntent: target.relationshipIntent
               ? intentLabels[target.relationshipIntent]
               : null,
             promptAnswers: target.promptAnswers.map((pa) => ({
               id: pa.id,
-              question: pickLocalized(locale, pa.prompt.question, pa.prompt.questionEn),
+              question: pickLocalized(locale, pa.prompt.question, pa.prompt.questionEn, pa.prompt.questionDe, pa.prompt.questionEs),
               answer: pa.answer,
             })),
             showcaseItems: target.showcaseItems.map((item) => ({

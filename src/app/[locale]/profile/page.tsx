@@ -42,6 +42,11 @@ export default async function ProfileEditPage({
     ? await prisma.storeItem.findUnique({ where: { id: user.equippedFrameId } })
     : null;
 
+  // TILLAGD 2026-09-21 - samma mönster som ramen ovan, för profilbakgrund.
+  const equippedBackgroundItem = user.equippedBackgroundId
+    ? await prisma.storeItem.findUnique({ where: { id: user.equippedBackgroundId } })
+    : null;
+
   const existingSelfie = await prisma.verificationSelfie.findUnique({ where: { userId } });
 
   const t = await getTranslations("Profile");
@@ -66,12 +71,17 @@ export default async function ProfileEditPage({
         <ProfileEditForm
           displayName={user.displayName}
           age={calculateAge(user.birthDate)}
-          tierName={user.tier ? pickLocalized(locale, user.tier.name, user.tier.nameEn) : null}
+          tierName={user.tier ? pickLocalized(locale, user.tier.name, user.tier.nameEn, user.tier.nameDe, user.tier.nameEs) : null}
           tierLevel={user.tier?.level ?? null}
           verified={user.verified}
           equippedFrame={
             equippedFrameItem
               ? { frameColor: equippedFrameItem.frameColor, frameStyle: equippedFrameItem.frameStyle }
+              : null
+          }
+          equippedBackground={
+            equippedBackgroundItem?.backgroundGradient
+              ? { gradient: equippedBackgroundItem.backgroundGradient }
               : null
           }
           initialBio={user.bio ?? ""}
@@ -82,6 +92,7 @@ export default async function ProfileEditPage({
           initialHairColor={user.hairColor}
           initialLocationCity={user.locationCity ?? ""}
           initialLocationCountry={user.locationCountry}
+          initialOpenToInternational={user.openToInternational}
           initialGender={user.gender}
           initialSeekingGender={user.seekingGender}
           initialPrefHeightMin={user.prefHeightMin}
@@ -90,7 +101,7 @@ export default async function ProfileEditPage({
           initialPrefHairColors={user.prefHairColors}
           prompts={prompts.map((p) => ({
             id: p.id,
-            question: pickLocalized(locale, p.question, p.questionEn),
+            question: pickLocalized(locale, p.question, p.questionEn, p.questionDe, p.questionEs),
             answer: answersByPrompt.get(p.id) ?? "",
           }))}
           interests={interests.map((i) => ({

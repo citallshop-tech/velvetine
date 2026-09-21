@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Link, redirect } from "@/i18n/navigation";
 import { getSessionUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { pickLocalized } from "@/lib/localizedField";
 import { ReportBlockMenu } from "@/components/ReportBlockMenu";
 import { ChatThread } from "@/components/ChatThread";
 import { AppHeader } from "@/components/AppHeader";
@@ -31,7 +32,11 @@ export default async function MatchThreadPage({
     include: {
       userA: true,
       userB: true,
-      messages: { orderBy: { createdAt: "asc" } },
+      // TILLAGD 2026-09-21 - digitala presenter (se claude/velvetine-status.md).
+      messages: {
+        orderBy: { createdAt: "asc" },
+        include: { giftStoreItem: { select: { giftEmoji: true } } },
+      },
     },
   });
 
@@ -50,9 +55,28 @@ export default async function MatchThreadPage({
 
   const me = await prisma.user.findUnique({
     where: { id: userId },
-    select: { tier: { select: { level: true } } },
+    select: { tier: { select: { level: true } }, equippedChatThemeId: true },
   });
   const hasReadReceipts = (me?.tier?.level ?? 0) >= MIN_TIER_LEVEL_FOR_READ_RECEIPTS;
+
+  const chatThemeItem = me?.equippedChatThemeId
+    ? await prisma.storeItem.findUnique({ where: { id: me.equippedChatThemeId } })
+    : null;
+
+  // TILLAGD 2026-09-21 - digitala presenter man äger, för
+  // gåvo-väljaren i ChatThread.tsx (se claude/velvetine-status.md).
+  const ownedGiftPurchases = await prisma.userStoreItem.findMany({
+    where: { userId, storeItem: { category: "DIGITAL_GIFT" } },
+    include: { storeItem: true },
+    orderBy: { storeItem: { order: "asc" } },
+  });
+  const ownedGifts = ownedGiftPurchases
+    .filter((p) => p.storeItem.giftEmoji)
+    .map((p) => ({
+      id: p.storeItem.id,
+      emoji: p.storeItem.giftEmoji!,
+      name: pickLocalized(locale, p.storeItem.name, p.storeItem.nameEn, p.storeItem.nameDe, p.storeItem.nameEs),
+    }));
 
   const other = match.userAId === userId ? match.userB : match.userA;
   const h = await getTranslations("Header");
@@ -61,6 +85,7 @@ export default async function MatchThreadPage({
     id: m.id,
     content: m.content,
     imageUrl: m.imageUrl,
+    giftEmoji: m.giftStoreItem?.giftEmoji ?? null,
     senderId: m.senderId,
     createdAt: m.createdAt.toISOString(),
   }));
@@ -91,6 +116,12 @@ export default async function MatchThreadPage({
         isActive={match.status === "ACTIVE"}
         hasReadReceipts={hasReadReceipts}
         otherLastReadAt={otherLastReadAt?.toISOString() ?? null}
+        ownedGifts={ownedGifts}
+        chatTheme={
+          chatThemeItem && chatThemeItem.chatBubbleColor && chatThemeItem.chatBackgroundColor
+            ? { bubbleColor: chatThemeItem.chatBubbleColor, backgroundColor: chatThemeItem.chatBackgroundColor }
+            : null
+        }
       />
       <div className="max-w-md mx-auto w-full">
         <AppFooter />

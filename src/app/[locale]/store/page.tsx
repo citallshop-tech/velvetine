@@ -38,15 +38,33 @@ export default async function StorePage({
 
   const serializedItems = items.map((item) => ({
     id: item.id,
-    name: pickLocalized(locale, item.name, item.nameEn),
+    name: pickLocalized(locale, item.name, item.nameEn, item.nameDe, item.nameEs),
     description: item.description,
     priceSek: item.priceSek / 100,
+    category: item.category,
     frameColor: item.frameColor,
     frameStyle: item.frameStyle,
+    chatBubbleColor: item.chatBubbleColor,
+    chatBackgroundColor: item.chatBackgroundColor,
+    // TILLAGD 2026-09-21 - PROFILE_BACKGROUND/DIGITAL_GIFT.
+    backgroundGradient: item.backgroundGradient,
+    giftEmoji: item.giftEmoji,
     owned: ownedIds.has(item.id),
-    equipped: user.equippedFrameId === item.id,
+    equipped:
+      item.category === "FRAME"
+        ? user.equippedFrameId === item.id
+        : item.category === "CHAT_THEME"
+          ? user.equippedChatThemeId === item.id
+          : item.category === "PROFILE_BACKGROUND"
+            ? user.equippedBackgroundId === item.id
+            : false, // DIGITAL_GIFT - utrustas aldrig, se StoreItemsList.tsx
     purchasable: Boolean(item.stripePriceId),
   }));
+
+  const frameItems = serializedItems.filter((i) => i.category === "FRAME");
+  const chatThemeItems = serializedItems.filter((i) => i.category === "CHAT_THEME");
+  const backgroundItems = serializedItems.filter((i) => i.category === "PROFILE_BACKGROUND");
+  const giftItems = serializedItems.filter((i) => i.category === "DIGITAL_GIFT");
 
   return (
     <div className="min-h-screen px-6 py-10">
@@ -58,7 +76,19 @@ export default async function StorePage({
 
         {!isStripeConfigured() && <p className="text-sm text-gold mb-6">{t("notConfigured")}</p>}
 
-        <StoreItemsList items={serializedItems} />
+        <h2 className="text-ivory text-lg mb-3">{t("categoryFrames")}</h2>
+        <StoreItemsList items={frameItems} category="FRAME" />
+
+        <h2 className="text-ivory text-lg mb-3 mt-10">{t("categoryChatThemes")}</h2>
+        <StoreItemsList items={chatThemeItems} category="CHAT_THEME" />
+
+        <h2 className="text-ivory text-lg mb-3 mt-10">{t("categoryBackgrounds")}</h2>
+        <p className="text-sm text-ivory-muted mb-3">{t("categoryBackgroundsHint")}</p>
+        <StoreItemsList items={backgroundItems} category="PROFILE_BACKGROUND" />
+
+        <h2 className="text-ivory text-lg mb-3 mt-10">{t("categoryGifts")}</h2>
+        <p className="text-sm text-ivory-muted mb-3">{t("categoryGiftsHint")}</p>
+        <StoreItemsList items={giftItems} category="DIGITAL_GIFT" />
 
         <AppFooter />
       </div>

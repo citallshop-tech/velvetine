@@ -1136,6 +1136,37 @@ Om sidan byggdes utan en inloggad session skulle ALLA se den
 "utloggade" varianten, oavsett vem som faktiskt besökte den efteråt.
 Nu tvingade till att alltid räknas ut på riktigt, för varje besök.
 
+## Riktiga kontaktuppgifter i policysidorna
+
+Alla fyra platshållare ("[fyll i kontaktadress]" osv.) i Villkor och
+Integritetspolicy (SV+EN) ersatta med `support@velvetine.app` - nu
+riktigt och verifierat, tack vare Email Routing du satte upp.
+
+## Butiken utökad — chattfärger, ny kategori
+
+Fyra nya köpbara chattfärger (Midnattsblå, Roströd, Skogsgrön, Kunglig
+lila) utöver de fem ramarna. `/store` visar nu båda kategorierna
+separat. En vald chattfärg ändrar bakgrunden och dina egna
+meddelandebubblor i chatten - synligt bara för dig själv (den andra
+personen ser sin egen inställning, inte din).
+
+**Ny installation krävs** (schemaändring + nya varor att seeda):
+```powershell
+npx prisma generate
+npm run db:push
+npm run db:seed
+npm run stripe:setup-store
+```
+Sista raden skapar Stripe-produkter för de fyra nya chattfärgerna -
+säker att köra även om du redan kört den för ramarna, hoppar bara
+över det som redan finns.
+
+## Organisationsnumret på plats
+
+851001-4692 ifyllt i Integritetspolicyn (SV+EN), rätt formaterat
+(XXXXXX-XXXX). Sista platshållaren i hela kodbasen - sökte igenom allt
+en gång till för säkerhets skull, inget mer kvar.
+
 ## Om något strular
 
 - **"Cannot find module '@prisma/client'"** → du missade steg 4, kör

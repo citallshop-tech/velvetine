@@ -23,6 +23,15 @@ model User {
   seekingGender          Gender[]
   locationCity           String?
   locationCountry        String?
+  // TILLAGD 2026-09-21 på Christoffers uttryckliga önskemål: en explicit,
+  // egen inställning för om man är öppen för att dejta utanför sitt eget
+  // land - inte bara en passiv följd av att landsfiltret råkar vara av.
+  // Default true = dagens de-facto-beteende (ingen har någonsin blivit
+  // exkluderad på land, se getDiscoveryCandidates i src/lib/discovery.ts)
+  // förblir oförändrat för alla befintliga användare tills de själva aktivt
+  // stänger av det på /profile. Se src/lib/discovery.ts för hur det
+  // faktiskt filtrerar (bara viewerns EGET flöde, aldrig vem som ser dem).
+  openToInternational    Boolean   @default(true)
   bio                    String?   @db.Text
   heightCm               Int?
   occupation             String?
@@ -54,6 +63,9 @@ model User {
   incognitoMode          Boolean   @default(false)
   boostedUntil           DateTime?
   equippedFrameId        String?
+  equippedChatThemeId    String?
+  // TILLAGD 2026-09-21 - samma mönster som ovan, för PROFILE_BACKGROUND-varor.
+  equippedBackgroundId   String?
   lastViewedLikesAt      DateTime?
 
   // Explicit, separate consent for processing gender/seekingGender - this
@@ -153,6 +165,11 @@ model Tier {
   id                  String   @id @default(cuid())
   name                String   @unique
   nameEn              String?
+  // TILLAGD 2026-09-21 - tyska/spanska UI-språk (se claude/velvetine-status.md).
+  // Faller tillbaka till svenska om tomt, se pickLocalized() i localizedField.ts -
+  // samma mönster som nameEn ovan, bara utökat till fler språk.
+  nameDe              String?
+  nameEs              String?
   level               Int      @unique // 1 (lowest) .. 5 (highest) - sort order
   priceMonthlySek      Int // price in ören (minor units), e.g. 29900 = 299.00 kr
   stripePriceId       String?  @unique
@@ -167,25 +184,46 @@ model Tier {
 
 enum StoreItemCategory {
   FRAME
+  CHAT_THEME
+  // TILLAGD 2026-09-21 - lyx-tillbehör runt 3:e byggpasset samma dag
+  // (se claude/velvetine-status.md): PROFILE_BACKGROUND är en "utrustningsbar"
+  // vara precis som FRAME/CHAT_THEME (en ägs, en är aktiv i taget, styrs via
+  // User.equippedBackgroundId nedan). DIGITAL_GIFT är annorlunda - den
+  // "utrustas" aldrig, den bara ägs och kan sedan skickas hur många gånger
+  // som helst i chatten (se Message.giftStoreItemId).
+  PROFILE_BACKGROUND
+  DIGITAL_GIFT
 }
 
 // One-time-purchase cosmetics ("flex" items) - separate from the
 // recurring tier subscription. A person can own several; which one is
-// actually shown is tracked via User.equippedFrameId below.
+// actually shown is tracked via User.equippedFrameId /
+// User.equippedChatThemeId below.
 model StoreItem {
   id            String            @id @default(cuid())
   name          String
   nameEn        String?
+  // TILLAGD 2026-09-21 - samma nameDe/nameEs-mönster som Tier ovan.
+  nameDe        String?
+  nameEs        String?
   description   String?
   category      StoreItemCategory
   priceSek      Int // ören, one-time (not recurring)
   stripePriceId String?           @unique
   frameColor    String // hex - the frame's own color, independent of tier
   frameStyle    String // key describing the visual pattern (see FRAME_STYLES in ProfileCard)
+  chatBubbleColor     String? // for CHAT_THEME items only - own message bubble color
+  chatBackgroundColor String? // for CHAT_THEME items only - chat window background
+  // TILLAGD 2026-09-21 - för PROFILE_BACKGROUND respektive DIGITAL_GIFT,
+  // samma valfria-fält-mönster som chatBubbleColor/chatBackgroundColor ovan.
+  backgroundGradient  String? // for PROFILE_BACKGROUND only - CSS gradient shown behind the whole profile card
+  giftEmoji           String? // for DIGITAL_GIFT only - the symbol shown when this gift is sent in chat
   active        Boolean           @default(true) // false = no longer sold, but past owners keep it
   order         Int               @default(0)
 
   purchases     UserStoreItem[]
+  // TILLAGD 2026-09-21 - back-relation för Message.giftStoreItemId nedan.
+  giftMessages  Message[]
 }
 
 model UserStoreItem {
@@ -254,6 +292,9 @@ model Prompt {
   id       String  @id @default(cuid())
   question String
   questionEn String?
+  // TILLAGD 2026-09-21 - samma questionDe/questionEs-mönster som ovan.
+  questionDe String?
+  questionEs String?
   category String // e.g. "Om dig", "Livsstil", "Vad du söker"
   active   Boolean @default(true)
 
@@ -470,6 +511,11 @@ model Message {
   imageUrl  String?
   readAt    DateTime?
   createdAt DateTime @default(now())
+  // TILLAGD 2026-09-21 - digitala presenter (se claude/velvetine-status.md).
+  // Valfritt precis som imageUrl - ett meddelande är antingen text, bild
+  // eller en present, aldrig flera samtidigt (UI:t skickar bara ett fält).
+  giftStoreItemId String?
+  giftStoreItem   StoreItem? @relation(fields: [giftStoreItemId], references: [id])
 
   @@index([matchId])
 }
@@ -528,11 +574,16 @@ enum ReportStatus {
   DISMISSED
 }
 
-// One row per page view. visitorHash is a same-day hash of IP + user agent
-// (see src/lib/tracking.ts) - never a persistent cookie or stored IP. It
-// resets every day, which is enough to dedupe "unique visitors" without
-// keeping anything that identifies a specific person long-term or that
-// would legally require a cookie-consent banner.
+// One row per page view. RÄTTAD KOMMENTAR 2026-09-21 - beskrev tidigare en
+// daglig hash av IP+user agent (se den nu oanvända getVisitorHash() i
+// src/lib/tracking.ts) som aldrig skulle behöva cookie-samtycke. Det är
+// INTE vad koden faktiskt gör: visitorHash är i praktiken värdet från en
+// PERSISTENT besökar-cookie (velvetine_visitor_id, 1 år, se
+// src/lib/visitorCookie.ts), satt av PageViewTracker.tsx bara efter att
+// besökaren godkänt Analys-cookies (src/lib/analyticsConsent.ts) - alltså
+// samtyckesgated, precis som den ska vara. Fältnamnet "visitorHash" är
+// alltså historiskt/missvisande (det är inte en hash), men lämnat orört
+// här eftersom en omdöpning bara är kosmetisk och inte påverkar något.
 model PageView {
   id          String   @id @default(cuid())
   path        String

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ProfileCard } from "@/components/ProfileCard";
+import { COUNTRIES, REGION_ORDER, countryLabel, regionLabel, nameFor } from "@/lib/countries";
 import { PhotoManager, type PhotoData } from "@/components/PhotoManager";
 import { ShowcaseManager, type ShowcaseItemData, CATEGORIES, CATEGORY_LABEL_KEYS } from "@/components/ShowcaseManager";
 
@@ -54,17 +55,13 @@ const HAIR_COLOR_LABEL_KEYS: Record<(typeof HAIR_COLORS)[number], string> = {
   OTHER: "hairColorOther",
 };
 
-const COUNTRY_CODES = [
-  "SE", "NO", "DK", "FI", "IS", "GB", "DE", "FR", "ES", "IT",
-  "NL", "BE", "AT", "CH", "IE", "PT", "PL", "US", "CA", "AU", "OTHER",
-] as const;
-const COUNTRY_LABEL_KEYS: Record<(typeof COUNTRY_CODES)[number], string> = {
-  SE: "countrySE", NO: "countryNO", DK: "countryDK", FI: "countryFI", IS: "countryIS",
-  GB: "countryGB", DE: "countryDE", FR: "countryFR", ES: "countryES", IT: "countryIT",
-  NL: "countryNL", BE: "countryBE", AT: "countryAT", CH: "countryCH", IE: "countryIE",
-  PT: "countryPT", PL: "countryPL", US: "countryUS", CA: "countryCA", AU: "countryAU",
-  OTHER: "countryOTHER",
-};
+// TILLAGT 2026-09-21: den gamla, hårdkodade 21-lands-listan (bara Norden +
+// västeuropa + USA/Kanada/Australien) ersatt med den globala listan i
+// src/lib/countries.ts - se den filens kommentar för hela resonemanget.
+// Länder grupperas per världsdel (<optgroup>) så listan går att hitta i
+// trots att den nu är ~190 rader lång, och landsnamnen kommer direkt från
+// countries.ts istället för via t()/messages-nycklar (samma mönster som
+// Tier.name/nameEn).
 
 export function ProfileEditForm({
   displayName,
@@ -72,6 +69,7 @@ export function ProfileEditForm({
   tierName,
   tierLevel,
   equippedFrame,
+  equippedBackground,
   verified,
   initialBio,
   initialHeightCm,
@@ -81,6 +79,7 @@ export function ProfileEditForm({
   initialHairColor,
   initialLocationCity,
   initialLocationCountry,
+  initialOpenToInternational,
   initialGender,
   initialSeekingGender,
   initialPrefHeightMin,
@@ -97,6 +96,8 @@ export function ProfileEditForm({
   tierName: string | null;
   tierLevel: number | null;
   equippedFrame: { frameColor: string; frameStyle: string } | null;
+  // TILLAGD 2026-09-21 - lyx-tillbehör (se claude/velvetine-status.md).
+  equippedBackground?: { gradient: string } | null;
   verified: boolean;
   initialBio: string;
   initialHeightCm: number | null;
@@ -106,6 +107,7 @@ export function ProfileEditForm({
   initialHairColor: string | null;
   initialLocationCity: string;
   initialLocationCountry: string | null;
+  initialOpenToInternational: boolean;
   initialGender: string;
   initialSeekingGender: string[];
   initialPrefHeightMin: number | null;
@@ -120,6 +122,7 @@ export function ProfileEditForm({
   const t = useTranslations("Profile");
   const sc = useTranslations("Showcase");
   const rt = useTranslations("Register");
+  const locale = useLocale();
 
   const [bio, setBio] = useState(initialBio);
   const [heightCm, setHeightCm] = useState(initialHeightCm?.toString() ?? "");
@@ -129,6 +132,7 @@ export function ProfileEditForm({
   const [hairColor, setHairColor] = useState(initialHairColor ?? "");
   const [locationCity, setLocationCity] = useState(initialLocationCity);
   const [locationCountry, setLocationCountry] = useState(initialLocationCountry ?? "");
+  const [openToInternational, setOpenToInternational] = useState(initialOpenToInternational);
   const [gender, setGender] = useState(initialGender);
   const [seekingGender, setSeekingGender] = useState<string[]>(initialSeekingGender);
   const [genderStatus, setGenderStatus] = useState<"idle" | "saving" | "saved">("idle");
@@ -183,6 +187,7 @@ export function ProfileEditForm({
         hairColor: hairColor || null,
         locationCity,
         locationCountry: locationCountry || null,
+        openToInternational,
       }),
     });
     setAboutStatus("saved");
@@ -249,6 +254,7 @@ export function ProfileEditForm({
             tierName,
             tierLevel,
             equippedFrame,
+            equippedBackground,
             verified,
             bio: bio || null,
             heightCm: heightCm ? Number(heightCm) : null,
@@ -256,9 +262,7 @@ export function ProfileEditForm({
             bodyType: bodyType ? t(BODY_TYPE_LABEL_KEYS[bodyType as (typeof BODY_TYPES)[number]]) : null,
             hairColor: hairColor ? t(HAIR_COLOR_LABEL_KEYS[hairColor as (typeof HAIR_COLORS)[number]]) : null,
             locationCity: locationCity || null,
-            locationCountry: locationCountry
-              ? t(COUNTRY_LABEL_KEYS[locationCountry as (typeof COUNTRY_CODES)[number]])
-              : null,
+            locationCountry: countryLabel(locationCountry, locale),
             relationshipIntent: relationshipIntent
               ? t(INTENT_LABEL_KEYS[relationshipIntent as (typeof INTENTS)[number]])
               : null,
@@ -425,14 +429,36 @@ export function ProfileEditForm({
               className="w-full bg-surface border border-border rounded-sm px-3 py-2 text-ivory focus:outline-none focus:border-gold"
             >
               <option value="">{t("locationCountryNone")}</option>
-              {COUNTRY_CODES.map((code) => (
-                <option key={code} value={code}>
-                  {t(COUNTRY_LABEL_KEYS[code])}
-                </option>
+              {REGION_ORDER.map((region) => (
+                <optgroup key={region} label={regionLabel(region, locale)}>
+                  {COUNTRIES.filter((c) => c.region === region)
+                    .slice()
+                    .sort((a, b) => nameFor(a, locale).localeCompare(nameFor(b, locale), locale))
+                    .map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {nameFor(c, locale)}
+                      </option>
+                    ))}
+                </optgroup>
               ))}
             </select>
           </div>
         </div>
+
+        <label className="mt-4 flex items-start gap-2 text-sm text-ivory-muted cursor-pointer">
+          <input
+            type="checkbox"
+            checked={openToInternational}
+            onChange={(e) => setOpenToInternational(e.target.checked)}
+            className="mt-0.5"
+          />
+          <span>
+            {t("openToInternationalLabel")}
+            <span className="block text-xs text-ivory-muted/70 mt-0.5">
+              {t("openToInternationalHint")}
+            </span>
+          </span>
+        </label>
 
         <div className="mt-4">
           <label className="text-sm text-ivory-muted block mb-1">{t("relationshipIntentLabel")}</label>

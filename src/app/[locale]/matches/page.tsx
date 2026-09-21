@@ -26,7 +26,15 @@ export default async function MatchesPage({
     include: {
       userA: true,
       userB: true,
-      messages: { orderBy: { createdAt: "desc" }, take: 1 },
+      // TILLAGD 2026-09-21 - giftStoreItem behövs för att kunna visa en
+      // egen förhandsvisningstext ("🎁 Present") istället för att felaktigt
+      // falla tillbaka på "Säg hej!" när senaste meddelandet var en present
+      // (samma sak gällde redan bilder, se logiken nedan).
+      messages: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        include: { giftStoreItem: true },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -52,6 +60,15 @@ export default async function MatchesPage({
           const other = match.userAId === userId ? match.userB : match.userA;
           const lastMessage = match.messages[0];
           const unread = isMatchUnread(match, userId);
+          // TILLAGD 2026-09-21 - visa en egen text för bild/present istället
+          // för att falla tillbaka på "Säg hej!" som om chatten var tom.
+          const preview =
+            lastMessage?.content ??
+            (lastMessage?.giftStoreItemId
+              ? t("giftPreview")
+              : lastMessage?.imageUrl
+                ? t("photoPreview")
+                : t("sayHi"));
 
           return (
             <Link
@@ -69,7 +86,7 @@ export default async function MatchesPage({
                   {other.displayName}
                 </p>
                 <p className={`text-sm truncate ${unread ? "text-gold" : "text-ivory-muted"}`}>
-                  {lastMessage?.content ?? t("sayHi")}
+                  {preview}
                 </p>
               </div>
               {unread && <span className="w-2.5 h-2.5 rounded-full bg-gold shrink-0" />}

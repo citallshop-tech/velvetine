@@ -112,7 +112,7 @@ export default async function VisitorsPage({
                 </p>
                 {visit.fromUser.tier && (
                   <p className="text-xs text-gold">
-                    {pickLocalized(locale, visit.fromUser.tier.name, visit.fromUser.tier.nameEn)}
+                    {pickLocalized(locale, visit.fromUser.tier.name, visit.fromUser.tier.nameEn, visit.fromUser.tier.nameDe, visit.fromUser.tier.nameEs)}
                   </p>
                 )}
               </div>

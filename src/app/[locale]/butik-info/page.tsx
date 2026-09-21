@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/prisma";
-import { pickLocalized } from "@/lib/localizedField";
+import { pickLocalized, localeToIntlTag } from "@/lib/localizedField";
 import { AppFooter } from "@/components/AppFooter";
 import { AppHeader } from "@/components/AppHeader";
 import { getSessionUserId } from "@/lib/auth";
@@ -20,7 +20,7 @@ export default async function StoreInfoPage({
   const isLoggedIn = Boolean(await getSessionUserId());
 
   const items = await prisma.storeItem.findMany({ where: { active: true }, orderBy: { order: "asc" } });
-  const priceFormatter = new Intl.NumberFormat(locale === "en" ? "en-US" : "sv-SE");
+  const priceFormatter = new Intl.NumberFormat(localeToIntlTag(locale));
 
   return (
     <div className="min-h-screen px-8 md:px-16 py-12">
@@ -36,12 +36,27 @@ export default async function StoreInfoPage({
               key={item.id}
               className="border border-border rounded-sm bg-surface p-4 flex items-center gap-4"
             >
-              <div
-                className="w-12 h-12 rounded-full bg-surface-raised shrink-0"
-                style={{ boxShadow: `inset 0 0 0 4px ${item.frameColor}` }}
-              />
+              {/* TILLAGD 2026-09-21 - egen förhandsvisning per kategori,
+                  samma idé som StoreItemsList.tsx i inloggade Butiken. */}
+              {item.category === "PROFILE_BACKGROUND" ? (
+                <div
+                  className="w-12 h-12 rounded-sm shrink-0 border border-border/60"
+                  style={{ background: item.backgroundGradient ?? "#241c17" }}
+                />
+              ) : item.category === "DIGITAL_GIFT" ? (
+                <div className="w-12 h-12 rounded-sm shrink-0 bg-surface-raised flex items-center justify-center text-xl">
+                  {item.giftEmoji ?? "🎁"}
+                </div>
+              ) : (
+                <div
+                  className="w-12 h-12 rounded-full bg-surface-raised shrink-0"
+                  style={{ boxShadow: `inset 0 0 0 4px ${item.frameColor}` }}
+                />
+              )}
               <div className="flex-1">
-                <p className="text-ivory">{pickLocalized(locale, item.name, item.nameEn)}</p>
+                <p className="text-ivory">
+                  {pickLocalized(locale, item.name, item.nameEn, item.nameDe, item.nameEs)}
+                </p>
                 {item.description && <p className="text-xs text-ivory-muted">{item.description}</p>}
               </div>
               <span className="text-gold text-sm shrink-0">

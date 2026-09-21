@@ -21,9 +21,8 @@ export default async function PrivacyPage({
         <section>
           <h2>1. Data controller</h2>
           <p>
-            C it all is the data controller for processing your personal
-            data in Velvetine. [Add company registration number and contact
-            details.]
+            C it all (org. no. 851001-4692) is the data controller for
+            processing your personal data in Velvetine.
           </p>
         </section>
 
@@ -78,7 +77,7 @@ export default async function PrivacyPage({
           <ul>
             <li><strong>Stripe</strong> - payment processing</li>
             <li><strong>Supabase</strong> - database hosting, servers within the EU (Ireland)</li>
-            <li><strong>OpenAI</strong> - used to assess the severity of reports (only the report&apos;s text, never your profile, photos, or messages). OpenAI offers a free standard Data Processing Addendum with the EU Standard Contractual Clauses required for transfers outside the EU/EEA already built in - accepted via a business account in OpenAI&apos;s account settings, no negotiation needed. [Action before going live: log in with Velvetine/C it all&apos;s business account and accept that agreement.]</li>
+            <li><strong>OpenAI</strong> - used for two things: assessing the severity of reports (only the report&apos;s text, never your profile, photos, or messages), and automatically screening uploaded photos for nudity and content involving minors before they&apos;re accepted. OpenAI offers a free standard Data Processing Addendum with the EU Standard Contractual Clauses required for transfers outside the EU/EEA already built in.</li>
           </ul>
           <p>We never sell your data to third parties.</p>
         </section>
@@ -158,7 +157,328 @@ export default async function PrivacyPage({
 
         <section>
           <h2>10. Contact</h2>
-          <p>Questions about your data: [add data protection contact address]</p>
+          <p>Questions about your data: support@velvetine.app</p>
+        </section>
+      </LegalPage>
+    );
+  }
+
+  if (locale === "de") {
+    return (
+      <LegalPage title="Datenschutzerklärung" updated="4. September 2026" homeHref={homeHref}>
+        <p className="text-xs">
+          Die schwedische Version dieser Richtlinie ist die rechtlich
+          verbindliche. Diese deutsche Version dient nur der
+          Verständlichkeit.
+        </p>
+        <section>
+          <h2>1. Verantwortlicher</h2>
+          <p>
+            C it all (Org.-Nr. 851001-4692) ist der Verantwortliche für die
+            Verarbeitung deiner personenbezogenen Daten in Velvetine.
+          </p>
+        </section>
+
+        <section>
+          <h2>2. Welche Daten wir erheben</h2>
+          <ul>
+            <li>Kontodaten: Name, E-Mail, Passwort (gehasht gespeichert, nie im Klartext), Geburtsdatum, Geschlecht, wen du suchst</li>
+            <li>Profilinhalte: Fotos, Kurzvorstellung, Antworten auf Profilfragen</li>
+            <li>Nachrichten, die du an andere Mitglieder sendest</li>
+            <li>Zahlungsdaten (verarbeitet von Stripe - wir speichern deine vollständigen Kartendaten niemals selbst)</li>
+            <li>Meldungen, die du machst oder von denen du betroffen bist</li>
+            <li>Grundlegende, nicht identifizierende Besuchsstatistiken (siehe Abschnitt 6)</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>2b. Geschlecht und wen du suchst - eine besondere Kategorie personenbezogener Daten</h2>
+          <p>
+            Angaben zu Geschlecht und wen du suchst können die sexuelle
+            Orientierung offenlegen, was Art. 9 der DSGVO als besondere
+            Kategorie personenbezogener Daten einstuft - dasselbe
+            Schutzniveau wie Gesundheitsdaten. Deshalb gibst du bei der
+            Registrierung eine gesonderte, ausdrückliche Einwilligung genau
+            hierfür ab, statt dass dies nur Teil der allgemeinen Annahme
+            der Bedingungen ist.
+          </p>
+          <p>
+            Wir geben diese Daten, oder die Tatsache, dass du Mitglied bei
+            Velvetine bist, niemals zu Marketingzwecken an Werbetreibende
+            oder andere Dritte weiter. (Genau diese Art der Weitergabe
+            führte 2021 dazu, dass eine europäische Aufsichtsbehörde eine
+            konkurrierende Dating-App wegen eines Verstoßes gegen Art. 9
+            mit einem Bußgeld belegte.)
+          </p>
+          <p className="text-xs">
+            [Zukünftige Funktion, noch nicht umgesetzt: eine fotobasierte
+            Identitätsverifizierung würde die Verarbeitung von
+            Gesichtsgeometrie beinhalten, die ebenfalls eine besondere
+            Kategorie ist (biometrische Daten). Diese Funktion würde eine
+            eigene, zusätzliche Einwilligung erfordern.]
+          </p>
+        </section>
+
+        <section>
+          <h2>3. Warum wir diese Daten verarbeiten (Rechtsgrundlage)</h2>
+          <ul>
+            <li><strong>Vertrag</strong> - um den Dienst bereitzustellen, für den du dich angemeldet hast</li>
+            <li><strong>Berechtigtes Interesse</strong> - für Sicherheit, die Prüfung von Meldungen und die Verhinderung von Missbrauch</li>
+            <li><strong>Rechtliche Verpflichtung</strong> - z. B. Buchführung über Zahlungen</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>4. Mit wem wir Daten teilen</h2>
+          <ul>
+            <li><strong>Stripe</strong> - Zahlungsabwicklung</li>
+            <li><strong>Supabase</strong> - Datenbankhosting, Server innerhalb der EU (Irland)</li>
+            <li><strong>OpenAI</strong> - wird für zwei Dinge verwendet: Einschätzung des Schweregrads von Meldungen (nur der Text der Meldung, niemals dein Profil, deine Fotos oder deine Nachrichten) und automatische Prüfung hochgeladener Fotos auf Nacktheit und Inhalte mit Minderjährigen, bevor sie akzeptiert werden. OpenAI bietet eine kostenlose Standard-Auftragsverarbeitungsvereinbarung (DPA) mit den für Übermittlungen außerhalb der EU/des EWR erforderlichen EU-Standardvertragsklauseln bereits integriert an.</li>
+          </ul>
+          <p>Wir verkaufen deine Daten niemals an Dritte.</p>
+        </section>
+
+        <section>
+          <h2>5. Wie lange wir Daten aufbewahren</h2>
+          <p>
+            Solange dein Konto aktiv ist. Wenn du dein Konto selbst
+            schließt, werden deine personenbezogenen Daten (Name, E-Mail,
+            Kurzvorstellung) sofort überschrieben. Nach einer dauerhaften
+            Sperrung wegen schwerwiegender Vorfälle können Daten
+            ausnahmsweise länger aufbewahrt werden, als Beweismittel für
+            den Fall, dass eine strafrechtliche Untersuchung relevant wird.
+          </p>
+          <p>
+            Chatnachrichten werden automatisch nach 90 Tagen gelöscht - wir
+            bewahren Unterhaltungen nicht länger auf, unabhängig davon, ob
+            das Konto ansonsten aktiv bleibt.
+          </p>
+          <p>
+            Zahlungsbezogene Buchführungsunterlagen werden gemäß dem
+            schwedischen Buchführungsgesetz 7 Jahre nach Ablauf des
+            betreffenden Kalenderjahres aufbewahrt - dies gilt unabhängig
+            davon, ob das Konto selbst früher gelöscht wird. Wir führen
+            außerdem ein Protokoll darüber, wann die Einwilligung zur
+            Verarbeitung sensibler Daten (Abschnitt 2b) erteilt oder
+            widerrufen wurde, als Nachweis der Einhaltung.
+          </p>
+        </section>
+
+        <section>
+          <h2>6. Cookies und Besuchsstatistiken</h2>
+          <p>
+            Wir zählen Seitenaufrufe, um zu verstehen, wie der Dienst
+            genutzt wird. Dazu wird ein zufällig generiertes Cookie
+            (velvetine_visitor_id) verwendet, das nur gesetzt wird, wenn du
+            &ldquo;Analyse&rdquo; im Cookie-Hinweis aktivierst - standardmäßig
+            deaktiviert und sofort entfernt, wenn du es wieder ausschaltest.
+            Die vollständige Liste der von uns verwendeten Cookies findest
+            du in unserer{" "}
+            <Link href="/cookies" className="text-gold hover:text-gold-bright">
+              Cookie-Richtlinie
+            </Link>
+            .
+          </p>
+        </section>
+
+        <section>
+          <h2>7. Deine Rechte</h2>
+          <p>Du hast das Recht:</p>
+          <ul>
+            <li>Auf die über dich gespeicherten Daten zuzugreifen</li>
+            <li>Unrichtige Daten korrigieren zu lassen</li>
+            <li>Die Löschung deiner Daten zu verlangen (das kannst du auch selbst in der App tun)</li>
+            <li>Deine Daten in einem strukturierten Format zu erhalten (Datenportabilität)</li>
+            <li>Bestimmten Verarbeitungen zu widersprechen</li>
+            <li>Deine Einwilligung zur Verarbeitung von Geschlecht/wen du suchst zu widerrufen (dies beendet faktisch die Möglichkeit, gematcht zu werden - genauso wie die Schließung deines Kontos)</li>
+            <li>Dich bei einer Datenschutzaufsichtsbehörde zu beschweren, wenn du der Meinung bist, dass wir deine Daten falsch verarbeiten - in Schweden die IMY (Integritetsskyddsmyndigheten), in anderen Ländern die jeweils zuständige Behörde</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>8. Mitglieder außerhalb der EU/des EWR</h2>
+          <p>
+            Velvetine ist so gebaut, dass es in allen Ländern funktioniert,
+            die unser Zahlungsanbieter unterstützt, nicht nur in Schweden.
+            Wenn du im Vereinigten Königreich ansässig bist, hast du
+            gleichwertige Rechte nach dem UK GDPR. Wenn du in einem
+            US-Bundesstaat mit eigenem Datenschutzgesetz ansässig bist
+            (z. B. Kaliforniens CCPA/CPRA), hast du Rechte wie Zugang,
+            Löschung und das Widersprechen gegen den Verkauf
+            personenbezogener Daten - wir verkaufen ohnehin niemals Daten
+            an irgendjemanden, sodass dieser Opt-out für alle faktisch der
+            Standard ist. Gewährt dir dein lokales Recht einen stärkeren
+            Schutz als hier beschrieben, gilt dieser stärkere Schutz.
+          </p>
+        </section>
+
+        <section>
+          <h2>9. Altersgrenze</h2>
+          <p>Velvetine ist nur für Personen ab 18 Jahren.</p>
+        </section>
+
+        <section>
+          <h2>10. Kontakt</h2>
+          <p>Fragen zu deinen Daten: support@velvetine.app</p>
+        </section>
+      </LegalPage>
+    );
+  }
+
+  if (locale === "es") {
+    return (
+      <LegalPage title="Política de privacidad" updated="4 de septiembre de 2026" homeHref={homeHref}>
+        <p className="text-xs">
+          La versión sueca de esta política es la legalmente vinculante.
+          Esta versión en español se ofrece por conveniencia.
+        </p>
+        <section>
+          <h2>1. Responsable del tratamiento</h2>
+          <p>
+            C it all (NIF/org. n.º 851001-4692) es el responsable del
+            tratamiento de tus datos personales en Velvetine.
+          </p>
+        </section>
+
+        <section>
+          <h2>2. Qué datos recopilamos</h2>
+          <ul>
+            <li>Datos de la cuenta: nombre, correo electrónico, contraseña (almacenada cifrada, nunca en texto plano), fecha de nacimiento, género, a quién buscas</li>
+            <li>Contenido del perfil: fotos, biografía, respuestas a las preguntas del perfil</li>
+            <li>Mensajes que envías a otros miembros</li>
+            <li>Datos de pago (gestionados por Stripe - nunca almacenamos nosotros mismos los datos completos de tu tarjeta)</li>
+            <li>Reportes que haces o de los que eres objeto</li>
+            <li>Estadísticas de visitas básicas y no identificativas (ver sección 6)</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>2b. Género y a quién buscas - una categoría especial de datos</h2>
+          <p>
+            Los datos sobre el género y a quién buscas pueden revelar la
+            orientación sexual, lo cual el artículo 9 del RGPD clasifica
+            como una categoría especial de datos personales - el mismo
+            nivel de protección que los datos de salud. Por eso das un
+            consentimiento explícito y separado específicamente para esto
+            al registrarte, en lugar de que quede incluido en la aceptación
+            general de los términos.
+          </p>
+          <p>
+            Nunca compartimos este dato, ni el hecho de que seas miembro de
+            Velvetine, con anunciantes u otros terceros con fines de
+            marketing. (Ese es exactamente el tipo de intercambio que
+            llevó a un regulador europeo a multar a una aplicación de citas
+            de la competencia por infringir el artículo 9 en 2021.)
+          </p>
+          <p className="text-xs">
+            [Función futura, aún no implementada: la verificación de
+            identidad basada en fotos implicaría procesar la geometría
+            facial, que también es una categoría especial (datos
+            biométricos). Esa función necesitaría su propio consentimiento
+            separado, además de este.]
+          </p>
+        </section>
+
+        <section>
+          <h2>3. Por qué tratamos estos datos (base legal)</h2>
+          <ul>
+            <li><strong>Contrato</strong> - para prestar el servicio para el que te registraste</li>
+            <li><strong>Interés legítimo</strong> - por seguridad, revisión de reportes y prevención de abusos</li>
+            <li><strong>Obligación legal</strong> - p. ej., contabilidad de pagos</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>4. Con quién compartimos datos</h2>
+          <ul>
+            <li><strong>Stripe</strong> - procesamiento de pagos</li>
+            <li><strong>Supabase</strong> - alojamiento de bases de datos, servidores dentro de la UE (Irlanda)</li>
+            <li><strong>OpenAI</strong> - se usa para dos cosas: evaluar la gravedad de los reportes (solo el texto del reporte, nunca tu perfil, fotos o mensajes) y examinar automáticamente las fotos subidas en busca de desnudez y contenido que involucre a menores antes de que se acepten. OpenAI ofrece un acuerdo de tratamiento de datos (DPA) estándar y gratuito, con las cláusulas contractuales tipo de la UE necesarias para las transferencias fuera de la UE/EEE ya incorporadas.</li>
+          </ul>
+          <p>Nunca vendemos tus datos a terceros.</p>
+        </section>
+
+        <section>
+          <h2>5. Cuánto tiempo conservamos los datos</h2>
+          <p>
+            Mientras tu cuenta esté activa. Si cierras tu propia cuenta,
+            tus datos personales (nombre, correo electrónico, biografía) se
+            sobrescriben de inmediato. Tras una suspensión permanente por
+            incidentes graves, los datos pueden conservarse
+            excepcionalmente más tiempo, como prueba en caso de que resulte
+            relevante una investigación penal.
+          </p>
+          <p>
+            Los mensajes de chat se eliminan automáticamente después de 90
+            días - no conservamos las conversaciones más tiempo que ese,
+            independientemente de que la cuenta siga activa por lo demás.
+          </p>
+          <p>
+            Los registros contables relacionados con pagos se conservan
+            durante 7 años tras el final del año natural al que se
+            refieren, conforme a la ley sueca de contabilidad - esto se
+            aplica independientemente de que la propia cuenta se elimine
+            antes. También mantenemos un registro de cuándo se otorgó o
+            revocó el consentimiento para el tratamiento de datos sensibles
+            (sección 2b), como prueba de cumplimiento.
+          </p>
+        </section>
+
+        <section>
+          <h2>6. Cookies y estadísticas de visitas</h2>
+          <p>
+            Contamos las visitas a las páginas para entender cómo se usa el
+            servicio. Para ello se usa una cookie generada aleatoriamente
+            (velvetine_visitor_id) que solo se establece si activas
+            &ldquo;Analítica&rdquo; en el aviso de cookies - desactivada por
+            defecto, y eliminada de inmediato si vuelves a desactivarla.
+            Consulta nuestra{" "}
+            <Link href="/cookies" className="text-gold hover:text-gold-bright">
+              política de cookies
+            </Link>{" "}
+            para ver la lista completa de las cookies que usamos.
+          </p>
+        </section>
+
+        <section>
+          <h2>7. Tus derechos</h2>
+          <p>Tienes derecho a:</p>
+          <ul>
+            <li>Acceder a los datos que tenemos sobre ti</li>
+            <li>Solicitar la corrección de datos inexactos</li>
+            <li>Solicitar la eliminación de tus datos (también puedes hacerlo tú mismo en la aplicación)</li>
+            <li>Recibir tus datos en un formato estructurado (portabilidad de datos)</li>
+            <li>Oponerte a determinados tratamientos</li>
+            <li>Retirar tu consentimiento al tratamiento de género/a quién buscas (esto pone fin, en la práctica, a la posibilidad de recibir coincidencias - igual que cerrar tu cuenta)</li>
+            <li>Reclamar ante una autoridad de protección de datos si consideras que tratamos tus datos incorrectamente - en Suecia, la IMY (Integritetsskyddsmyndigheten); en otros países, tu autoridad local equivalente</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>8. Miembros fuera de la UE/EEE</h2>
+          <p>
+            Velvetine está diseñado para funcionar en todos los países que
+            admite nuestro proveedor de pagos, no solo en Suecia. Si eres
+            residente en el Reino Unido, tienes derechos equivalentes según
+            el UK GDPR. Si eres residente en un estado de EE. UU. con su
+            propia ley de privacidad (p. ej., la CCPA/CPRA de California),
+            tienes derechos como el acceso, la eliminación y la opción de
+            excluirte de la venta de datos personales - nosotros ya nunca
+            vendemos datos a nadie, por lo que esa exclusión es, en la
+            práctica, la opción predeterminada para todos. Cuando la ley
+            local te otorgue una protección más fuerte que la descrita
+            aquí, se aplicará esa protección más fuerte.
+          </p>
+        </section>
+
+        <section>
+          <h2>9. Edad mínima</h2>
+          <p>Velvetine es solo para personas de 18 años o más.</p>
+        </section>
+
+        <section>
+          <h2>10. Contacto</h2>
+          <p>Preguntas sobre tus datos: support@velvetine.app</p>
         </section>
       </LegalPage>
     );
@@ -169,9 +489,8 @@ export default async function PrivacyPage({
       <section>
         <h2>1. Personuppgiftsansvarig</h2>
         <p>
-          C it all är personuppgiftsansvarig för behandlingen av dina
-          personuppgifter i Velvetine. [Fyll i organisationsnummer och
-          kontaktuppgifter.]
+          C it all (org.nr 851001-4692) är personuppgiftsansvarig för
+          behandlingen av dina personuppgifter i Velvetine.
         </p>
       </section>
 
@@ -227,7 +546,7 @@ export default async function PrivacyPage({
         <ul>
           <li><strong>Stripe</strong> - betalningshantering</li>
           <li><strong>Supabase</strong> - databasdrift, servrar inom EU (Irland)</li>
-          <li><strong>OpenAI</strong> - används för att bedöma allvarlighetsgraden i rapporter (bara rapportens text, aldrig din profil, dina bilder eller dina meddelanden). OpenAI erbjuder ett kostnadsfritt standardavtal (DPA) med de EU-standardavtalsklausuler som krävs för överföring utanför EU/EES inbyggda - godkänns via ett företagskonto hos OpenAI (Data Controls i kontoinställningarna), inga förhandlingar behövs. [Åtgärd innan skarp lansering: logga in med Velvetine/C it alls företagskonto och godkänn det avtalet.]</li>
+          <li><strong>OpenAI</strong> - används för två saker: bedöma allvarlighetsgraden i rapporter (bara rapportens text, aldrig din profil, dina bilder eller dina meddelanden), och automatiskt granska uppladdade bilder för nakenhet och innehåll som rör minderåriga innan de godkänns. OpenAI erbjuder ett kostnadsfritt standardavtal (DPA) med de EU-standardavtalsklausuler som krävs för överföring utanför EU/EES inbyggda.</li>
         </ul>
         <p>Vi säljer aldrig dina uppgifter till tredje part.</p>
       </section>
@@ -306,7 +625,7 @@ export default async function PrivacyPage({
 
       <section>
         <h2>10. Kontakt</h2>
-        <p>Frågor om dina uppgifter: [fyll i kontaktadress för dataskyddsfrågor]</p>
+        <p>Frågor om dina uppgifter: support@velvetine.app</p>
       </section>
     </LegalPage>
   );

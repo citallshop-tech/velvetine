@@ -23,6 +23,9 @@ export interface ProfileCardData {
   tierName: string | null;
   tierLevel?: number | null;
   equippedFrame?: { frameColor: string; frameStyle: string } | null;
+  // TILLAGD 2026-09-21 - lyx-tillbehör: en köpt profilbakgrund lyser igenom
+  // hela kortet istället för standardfärgen bg-surface, se render nedan.
+  equippedBackground?: { gradient: string } | null;
   verified?: boolean;
   bio: string | null;
   heightCm: number | null;
@@ -69,6 +72,7 @@ export function ProfileCard({ data }: { data: ProfileCardData }) {
     tierName,
     tierLevel,
     equippedFrame,
+    equippedBackground,
     verified,
     bio,
     heightCm,
@@ -99,7 +103,7 @@ export function ProfileCard({ data }: { data: ProfileCardData }) {
   const glowStrength = equippedFrame
     ? equippedFrame.frameStyle === "double-glow"
       ? 24
-      : equippedFrame.frameStyle === "glow"
+      : equippedFrame.frameStyle === "glow" || equippedFrame.frameStyle === "shimmer"
         ? 14
         : 0
     : tierLevel && tierLevel >= 4
@@ -139,9 +143,18 @@ export function ProfileCard({ data }: { data: ProfileCardData }) {
 
   return (
     <>
-      <div className="border border-border rounded-sm bg-surface overflow-hidden">
       <div
-        className="relative w-full aspect-square bg-surface-raised flex items-center justify-center"
+        className="border border-border rounded-sm overflow-hidden"
+        style={
+          equippedBackground
+            ? { background: equippedBackground.gradient }
+            : { backgroundColor: "var(--color-surface)" }
+        }
+      >
+      <div
+        className={`relative w-full aspect-square bg-surface-raised flex items-center justify-center ${
+          equippedFrame?.frameStyle === "shimmer" ? "animate-frame-shimmer" : ""
+        }`}
         style={frameShadow ? { boxShadow: frameShadow } : undefined}
       >
         {tierLevel && TIER_SYMBOLS[tierLevel] && (
