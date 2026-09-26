@@ -128,6 +128,66 @@ export async function sendNewMatchEmail(to: string, matchUrl: string): Promise<v
   }
 }
 
+/**
+ * TILLAGT 2026-09-26 (Christoffer frågade om automatiska varningar finns -
+ * svaret var att checkImageSafety() i imageModeration.ts redan upptäcker
+ * misstänkt CSAM automatiskt och fryser kontot direkt, men ingen fick
+ * någon avisering om det - det låg bara som en SafetyFlag-rad i
+ * adminpanelen tills någon råkade titta där. Samma "AKUT"-mönster som
+ * redan finns på Meetrana (se sendUrgentModerationAlert i
+ * meetrana/src/lib/moderation/report.ts) - ett kritiskt fynd får aldrig
+ * bara tyst vänta på att en människa loggar in och kollar av en slump.
+ *
+ * Får ALDRIG throwa - den anropas från den kritiska
+ * granskningsvägen (checkImageSafety) och ett mejlfel där ska aldrig
+ * kunna hindra att kontot faktiskt fryses.
+ */
+export async function sendUrgentSafetyAlert(params: {
+  userId: string;
+  context: string;
+  imageUrl: string;
+}): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  const toAddress = process.env.ADMIN_SAFETY_ALERT_EMAIL || "citallshop@gmail.com";
+
+  if (!apiKey) {
+    console.error(
+      `[SÄKERHETSVARNING] RESEND_API_KEY saknas - kunde inte skicka AKUT-mejl för misstänkt CSAM (användare ${params.userId}, kontext ${params.context}). Kontot är ändå fryst.`
+    );
+    return;
+  }
+
+  try {
+    const res = await fetch(RESEND_API_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: FROM_ADDRESS,
+        to: toAddress,
+        subject: "\u{1F6A8}\u{1F6A8} AKUT: misstänkt CSAM upptäckt på Velvetine",
+        html: `
+          <p><strong>\u{1F6A8}\u{1F6A8} AKUT - kräver omedelbar mänsklig granskning</strong></p>
+          <p>Velvetines automatiska bildgranskning har flaggat en bild från användare
+          <code>${params.userId}</code> (kontext: ${params.context}) som misstänkt CSAM.</p>
+          <p>Kontot är redan automatiskt fryst (SUSPENDED) och en SafetyFlag-rad har skapats.</p>
+          <p>Gå till adminpanelen (Säkerhetsflaggor) för att granska ärendet och hantera
+          anmälan till NCMEC/polis omedelbart.</p>
+        `,
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(`[SÄKERHETSVARNING] Kunde inte skicka AKUT-mejl: ${res.status} ${text}`);
+    }
+  } catch (err) {
+    console.error("[SÄKERHETSVARNING] Kunde inte skicka AKUT-mejl:", err);
+  }
+}
+
 export async function sendNewMessageEmail(
   to: string,
   senderName: string,

@@ -118,14 +118,15 @@ export default async function TermsPage({
           <ul>
             <li><strong>Temporary suspension</strong> - the account can be reactivated</li>
             <li><strong>Permanent ban</strong> - the account is closed for good; data may be retained as evidence in serious cases</li>
-            <li><strong>Deletion</strong> - the account and personal data are permanently removed</li>
+            <li><strong>Deletion</strong> - you can delete your account at any time. Your profile (photos, bio, prompt answers, interests, showcase items, and verification selfie) is then permanently removed. Data linked to reports or safety flags about you is excluded from this and is retained for as long as the law requires, or for as long as an investigation is ongoing, even after the account is deleted - this isn't treated as part of your profile, but as evidence of a possible rule violation</li>
           </ul>
           <p>
-            An account that accumulates repeated confirmed reports is
-            automatically suspended (temporarily at five, permanently at
-            ten), regardless of what each individual report concerned. In
+            An account that accumulates ten confirmed reports is
+            automatically and permanently banned, regardless of what each
+            individual report concerned. Fewer confirmed reports can lead
+            to a temporary suspension at an administrator's discretion. In
             very serious cases, an account can be permanently banned
-            immediately, without waiting for that threshold.
+            immediately, without waiting for any threshold to be reached.
           </p>
         </section>
 
@@ -297,15 +298,16 @@ export default async function TermsPage({
           <ul>
             <li><strong>Vorübergehende Sperrung</strong> - das Konto kann reaktiviert werden</li>
             <li><strong>Dauerhafte Sperrung</strong> - das Konto wird endgültig geschlossen; Daten können in schweren Fällen als Beweismittel aufbewahrt werden</li>
-            <li><strong>Löschung</strong> - das Konto und die personenbezogenen Daten werden dauerhaft entfernt</li>
+            <li><strong>Löschung</strong> - du kannst dein Konto jederzeit löschen. Dein Profil (Fotos, Bio, Profilfragen, Interessen, Vorzeigeobjekte und Verifizierungsselfie) wird dann dauerhaft entfernt. Daten im Zusammenhang mit Meldungen oder Sicherheitsmarkierungen über dich sind davon ausgenommen und werden so lange aufbewahrt, wie es das Gesetz verlangt oder eine Untersuchung läuft, auch nach der Löschung des Kontos - das zählt nicht als Teil deines Profils, sondern als Beweismittel für einen möglichen Regelverstoß</li>
           </ul>
           <p>
-            Ein Konto, das wiederholt bestätigte Meldungen ansammelt, wird
-            automatisch gesperrt (vorübergehend bei fünf, dauerhaft bei
-            zehn), unabhängig davon, worum es bei der jeweiligen Meldung
-            ging. In besonders schweren Fällen kann ein Konto sofort
-            dauerhaft gesperrt werden, ohne dass diese Schwelle abgewartet
-            wird.
+            Ein Konto, das zehn bestätigte Meldungen ansammelt, wird
+            automatisch dauerhaft gesperrt, unabhängig davon, worum es bei
+            der jeweiligen Meldung ging. Weniger bestätigte Meldungen
+            können nach Einschätzung eines Administrators zu einer
+            vorübergehenden Sperrung führen. In besonders schweren Fällen
+            kann ein Konto sofort dauerhaft gesperrt werden, ohne dass
+            eine Schwelle abgewartet wird.
           </p>
         </section>
 
@@ -474,15 +476,16 @@ export default async function TermsPage({
           <ul>
             <li><strong>Suspensión temporal</strong> - la cuenta puede reactivarse</li>
             <li><strong>Suspensión permanente</strong> - la cuenta se cierra definitivamente; los datos pueden conservarse como prueba en casos graves</li>
-            <li><strong>Eliminación</strong> - la cuenta y los datos personales se eliminan de forma permanente</li>
+            <li><strong>Eliminación</strong> - puedes eliminar tu cuenta en cualquier momento. Tu perfil (fotos, biografía, respuestas de perfil, intereses, elementos destacados y selfie de verificación) se elimina entonces de forma permanente. Los datos relacionados con reportes o marcas de seguridad sobre ti quedan excluidos y se conservan durante el tiempo que exija la ley o mientras dure una investigación, incluso después de eliminar la cuenta - esto no se considera parte de tu perfil, sino prueba de una posible infracción</li>
           </ul>
           <p>
-            Una cuenta que acumula reportes confirmados de forma repetida
-            se suspende automáticamente (temporalmente a los cinco,
-            permanentemente a los diez), independientemente de lo que
-            tratara cada reporte individual. En casos muy graves, una
+            Una cuenta que acumula diez reportes confirmados se suspende
+            permanentemente de forma automática, independientemente de lo
+            que tratara cada reporte individual. Un número menor de
+            reportes confirmados puede dar lugar a una suspensión temporal
+            a criterio de un administrador. En casos muy graves, una
             cuenta puede ser suspendida permanentemente de inmediato, sin
-            esperar a alcanzar ese umbral.
+            esperar a alcanzar ningún umbral.
           </p>
         </section>
 
@@ -642,14 +645,15 @@ export default async function TermsPage({
         <ul>
           <li><strong>Tillfällig avstängning</strong> - kontot kan återaktiveras</li>
           <li><strong>Permanent avstängning</strong> - kontot stängs för gott, uppgifter kan sparas som bevisunderlag vid allvarliga fall</li>
-          <li><strong>Radering</strong> - kontot och personuppgifterna tas bort permanent</li>
+          <li><strong>Radering</strong> - du kan när som helst radera ditt konto. Din profil (bilder, bio, profilfrågor, intressen, skrytprylar och verifieringsselfie) tas då bort permanent. Uppgifter kopplade till rapporter eller säkerhetsflaggor om dig är undantagna och sparas så länge lagen kräver det eller så länge en utredning pågår, även efter att kontot raderats - det räknas inte som din profil, utan som bevisunderlag om ett eventuellt regelbrott</li>
         </ul>
         <p>
-          Ett konto som ackumulerar upprepade bekräftade rapporter stängs
-          av automatiskt (tillfälligt vid fem, permanent vid tio),
-          oavsett vad varje enskild rapport gällde. Vid mycket allvarliga
-          händelser kan ett konto stängas av permanent direkt, utan att
-          vänta på att gränsen nås.
+          Ett konto som ackumulerar tio bekräftade rapporter stängs av
+          permanent automatiskt, oavsett vad varje enskild rapport gällde.
+          Färre bekräftade rapporter kan leda till en tillfällig
+          avstängning efter en administratörs bedömning. Vid mycket
+          allvarliga händelser kan ett konto stängas av permanent direkt,
+          utan att vänta på att någon gräns nås.
         </p>
       </section>
 

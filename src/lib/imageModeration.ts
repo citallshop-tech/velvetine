@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { sendUrgentSafetyAlert } from "@/lib/email";
 
 const MODERATION_API_URL = "https://api.openai.com/v1/moderations";
 const MODEL = "omni-moderation-latest";
@@ -95,6 +96,15 @@ export async function checkImageSafety(
           data: { accountStatus: "SUSPENDED" },
         }),
       ]);
+
+      // TILLAGT 2026-09-26: se den utförliga kommentaren på
+      // sendUrgentSafetyAlert i lib/email.ts - kontot fryses ovan
+      // oavsett, men en människa måste också få veta om det NU, inte
+      // "nästa gång någon råkar öppna adminpanelen". Awaited på samma
+      // sätt som Meetranas motsvarighet - ett kritiskt fynd får inte
+      // riskera att gå förlorat om processen avslutas direkt efter.
+      await sendUrgentSafetyAlert({ userId, context, imageUrl });
+
       return { safe: false, reason: "underage_suspected" };
     }
 
