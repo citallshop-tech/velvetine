@@ -59,8 +59,31 @@ export default async function StoreInfoPage({
                 </p>
                 {item.description && <p className="text-xs text-ivory-muted">{item.description}</p>}
               </div>
-              <span className="text-gold text-sm shrink-0">
-                {priceFormatter.format(item.priceSek / 100)} kr
+              {/* RÄTTAD 2026-09-27 (se claude/velvetine-status.md) - den här
+                  sidan visade tidigare alltid `priceSek/100 kr`, oavsett
+                  kategori. Det blev missvisande sedan poängsystemet infördes:
+                  DIGITAL_GIFT har inget kronor-pris längre alls (priceSek är
+                  oanvänt, bara creditCost gäller - de kan bara köpas med
+                  poäng i chatten), och FRAME/CHAT_THEME/PROFILE_BACKGROUND
+                  nämnde aldrig poäng-alternativet som "riktiga" Butiken
+                  (StoreItemsList.tsx) redan visar. Visar nu rätt pris per
+                  kategori istället för att alltid anta ett kronor-pris. */}
+              <span className="text-gold text-sm shrink-0 text-right">
+                {item.category === "DIGITAL_GIFT" ? (
+                  t("giftCreditCost", { count: item.creditCost ?? 0 })
+                ) : (
+                  <>
+                    {priceFormatter.format(item.priceSek / 100)} kr
+                    {item.creditCost != null && (
+                      <>
+                        <br />
+                        <span className="text-xs text-ivory-muted">
+                          {t("orCredits", { count: item.creditCost })}
+                        </span>
+                      </>
+                    )}
+                  </>
+                )}
               </span>
             </div>
           ))}

@@ -225,6 +225,8 @@
   "StoreInfo": {
     "title": "Shop",
     "subtitle": "Käufliche Rahmen für dein Profilbild - Einmalkauf, unabhängig von deiner Mitgliedsstufe. Sichtbar für alle, die dein Profil sehen.",
+    "giftCreditCost": "{count} Punkte",
+    "orCredits": "oder {count} Punkte",
     "cta": "Zum Kaufen anmelden",
     "ctaLoggedIn": "Zum Shop"
   },

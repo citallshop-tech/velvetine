@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUserId, destroySession } from "@/lib/auth";
 import { stripe, isStripeConfigured } from "@/lib/stripe";
+import { deleteAccount } from "@/lib/accountDeletion";
 
 export async function POST() {
   const userId = await getSessionUserId();
@@ -31,22 +32,13 @@ export async function POST() {
     }
   }
 
-  // Soft-delete: mark as deleted and scrub personal fields, rather than a
-  // hard row delete. Matches/messages/reports reference this user id, and
-  // keeping the row (with content scrubbed) avoids either cascading deletes
-  // through someone else's match history or leaving dangling references.
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      accountStatus: "DELETED",
-      deletedAt: new Date(),
-      email: `deleted-${userId}@velvetine.invalid`,
-      displayName: "Borttaget konto",
-      bio: null,
-      stripeSubscriptionId: null,
-      subscriptionStatus: "NONE",
-    },
-  });
+  // RÄTTAD 2026-09-27 (se claude/velvetine-status.md) - raderade tidigare
+  // bara namn/e-post/bio, trots att Villkoren lovar att bilder,
+  // profilfrågor, intressen, skrytprylar och verifieringsselfie tas bort
+  // permanent. deleteAccount() gör nu det på riktigt (utom om en olöst
+  // rapport/säkerhetsflagga finns mot personen - se
+  // src/lib/accountDeletion.ts för hela resonemanget).
+  await deleteAccount(userId);
 
   await destroySession();
 

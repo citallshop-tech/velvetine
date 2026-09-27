@@ -225,6 +225,8 @@
   "StoreInfo": {
     "title": "Butiken",
     "subtitle": "Köpbara ramar för din profilbild - engångsköp, separat från din medlemsnivå. Syns för alla som ser din profil.",
+    "giftCreditCost": "{count} poäng",
+    "orCredits": "eller {count} poäng",
     "cta": "Logga in för att köpa",
     "ctaLoggedIn": "Gå till butiken"
   },

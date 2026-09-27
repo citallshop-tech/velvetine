@@ -225,6 +225,8 @@
   "StoreInfo": {
     "title": "Tienda",
     "subtitle": "Marcos para tu foto de perfil - compra única, independiente de tu nivel de membresía. Visible para cualquiera que vea tu perfil.",
+    "giftCreditCost": "{count} puntos",
+    "orCredits": "o {count} puntos",
     "cta": "Inicia sesión para comprar",
     "ctaLoggedIn": "Ir a la tienda"
   },

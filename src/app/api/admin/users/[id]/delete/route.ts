@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAdminUser } from "@/lib/admin";
 import { stripe, isStripeConfigured } from "@/lib/stripe";
+import { deleteAccount } from "@/lib/accountDeletion";
 
 export async function POST(
   request: Request,
@@ -41,21 +42,14 @@ export async function POST(
     }
   }
 
-  // Same soft-delete pattern as self-service deletion in the dashboard:
-  // scrub personal fields, keep the row so matches/messages/reports that
-  // reference this id don't break for the other people involved.
-  await prisma.user.update({
-    where: { id },
-    data: {
-      accountStatus: "DELETED",
-      deletedAt: new Date(),
-      email: `deleted-${id}@velvetine.invalid`,
-      displayName: "Borttaget konto",
-      bio: null,
-      stripeSubscriptionId: null,
-      subscriptionStatus: "NONE",
-    },
-  });
+  // RÄTTAD 2026-09-27 (se claude/velvetine-status.md) - använder nu samma
+  // delade deleteAccount()-funktion som självbetjänings-raderingen, som
+  // faktiskt raderar bilder/profilfrågor/intressen/skrytprylar/
+  // verifieringsselfie (utom vid en pågående utredning) - de två raderna
+  // hade tidigare varsin kopia av bara fält-rensningen, vilket är precis
+  // hur den luckan uppstod (Stripe-avbrytningen lades bara till på båda
+  // ställen för sig, den riktiga raderingen aldrig på något av dem).
+  await deleteAccount(id);
 
   return NextResponse.json({ ok: true });
 }

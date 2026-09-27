@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAdminUser } from "@/lib/admin";
+import { maybeEraseAfterReportResolved } from "@/lib/accountDeletion";
 
 export async function POST(
   request: Request,
@@ -26,6 +27,15 @@ export async function POST(
     where: { id },
     data: { status: reportStatus, resolvedAt: new Date() },
   });
+
+  // TILLAGD 2026-09-27 (se claude/velvetine-status.md, src/lib/accountDeletion.ts)
+  // - om den rapporterade personen redan bett om att få sitt konto
+  // raderat, men den riktiga raderingen av bilder/profilfrågor/intressen/
+  // skrytprylar/verifieringsselfie sköts upp EFTERSOM den här rapporten
+  // var olöst, färdigställ raderingen nu (bara om inga andra olösta
+  // rapporter/säkerhetsflaggor finns kvar mot personen). No-op för alla
+  // andra rapporter (den absoluta majoriteten) - bara en extra koll.
+  await maybeEraseAfterReportResolved(report.reportedUserId);
 
   if (action === "suspend" || action === "ban") {
     // A validated report adds a warning regardless of which action the

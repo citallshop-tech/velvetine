@@ -225,6 +225,8 @@
   "StoreInfo": {
     "title": "Store",
     "subtitle": "Purchasable frames for your profile photo - one-time purchase, separate from your membership tier. Visible to anyone who sees your profile.",
+    "giftCreditCost": "{count} credits",
+    "orCredits": "or {count} credits",
     "cta": "Log in to buy",
     "ctaLoggedIn": "Go to the store"
   },
