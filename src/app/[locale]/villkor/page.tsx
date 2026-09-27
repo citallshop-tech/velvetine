@@ -118,13 +118,13 @@ export default async function TermsPage({
           <ul>
             <li><strong>Temporary suspension</strong> - the account can be reactivated</li>
             <li><strong>Permanent ban</strong> - the account is closed for good; data may be retained as evidence in serious cases</li>
-            <li><strong>Deletion</strong> - you can delete your account at any time. Your profile (photos, bio, prompt answers, interests, showcase items, and verification selfie) is then permanently removed. Data linked to reports or safety flags about you is excluded from this and is retained for as long as the law requires, or for as long as an investigation is ongoing, even after the account is deleted - this isn't treated as part of your profile, but as evidence of a possible rule violation</li>
+            <li><strong>Deletion</strong> - you can delete your account at any time. Your profile (photos, bio, prompt answers, interests, showcase items, and verification selfie) is then permanently removed. Data linked to reports or safety flags about you is excluded from this and is retained for as long as the law requires, or for as long as an investigation is ongoing, even after the account is deleted - this isn&apos;t treated as part of your profile, but as evidence of a possible rule violation</li>
           </ul>
           <p>
             An account that accumulates ten confirmed reports is
             automatically and permanently banned, regardless of what each
             individual report concerned. Fewer confirmed reports can lead
-            to a temporary suspension at an administrator's discretion. In
+            to a temporary suspension at an administrator&apos;s discretion. In
             very serious cases, an account can be permanently banned
             immediately, without waiting for any threshold to be reached.
           </p>
