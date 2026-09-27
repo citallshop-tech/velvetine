@@ -209,15 +209,16 @@ async function main() {
     },
 
     // TILLAGD 2026-09-21 - lyx-tillbehör, tredje byggpasset samma dag (se
-    // claude/velvetine-status.md för fullständig bakgrund). Alla nya varor
-    // nedan har active: false med flit - de finns i databasen och all UI
-    // (Butiken, ChatThread, ProfileCard) är byggd och redo för dem, men de
-    // syns inte för riktiga användare förrän Christoffer (1) bestämmer sig
-    // för slutgiltiga priser och (2) sätter upp riktiga Stripe-produkter
-    // för dem (samma script-mönster som setup-stripe-store-items.ts) - helt
-    // i linje med den stående regeln att aldrig röra betalning/Stripe utan
-    // hans godkännande. Att sätta active: true är det enda som krävs för
-    // att slå på en vara när han är redo.
+    // claude/velvetine-status.md för fullständig bakgrund).
+    // ÄNDRAD 2026-09-27 (fjärde passet) - aktiverade nu (active: true) för
+    // POÄNG-köp, på Christoffers uttryckliga begäran, trots att de
+    // fortfarande INTE har någon riktig Stripe-produkt/pris (kräver att
+    // Stripe-åtkomsten är tillbaka, se claude/velvetine-status.md). Det är
+    // säkert att göra så: `purchasable` (kronor-köpet) styrs helt separat
+    // av om `stripePriceId` finns satt (se src/app/[locale]/store/page.tsx),
+    // så "Köp"-knappen förblir automatiskt inaktiv/gråad tills dess - bara
+    // "Lös in för poäng"-knappen blir klickbar nu. Priserna nedan är redan
+    // beslutade sedan tidigare, oförändrade.
     {
       name: "Onyx",
       nameEn: "Onyx",
@@ -230,7 +231,7 @@ async function main() {
       frameColor: "#1c1c1c",
       frameStyle: "shimmer",
       order: 10,
-      active: false,
+      active: true,
     },
     {
       name: "Pärlvit",
@@ -244,7 +245,7 @@ async function main() {
       frameColor: "#e8e3d9",
       frameStyle: "shimmer",
       order: 11,
-      active: false,
+      active: true,
     },
     {
       name: "Midnattsguld",
@@ -259,7 +260,7 @@ async function main() {
       frameStyle: "solid",
       backgroundGradient: "linear-gradient(160deg, #0f1420 0%, #1a2340 55%, #3a2f12 100%)",
       order: 12,
-      active: false,
+      active: true,
     },
     {
       name: "Vinröd sammet",
@@ -274,7 +275,7 @@ async function main() {
       frameStyle: "solid",
       backgroundGradient: "linear-gradient(160deg, #1a0e12 0%, #3f1420 60%, #5a1f2c 100%)",
       order: 13,
-      active: false,
+      active: true,
     },
     {
       name: "Djup smaragd",
@@ -289,7 +290,7 @@ async function main() {
       frameStyle: "solid",
       backgroundGradient: "linear-gradient(160deg, #0c1a14 0%, #163828 55%, #1f4a35 100%)",
       order: 14,
-      active: false,
+      active: true,
     },
     {
       name: "Champagnefunkel",
@@ -304,7 +305,7 @@ async function main() {
       frameStyle: "solid",
       backgroundGradient: "linear-gradient(160deg, #1c1712 0%, #3a2f1d 55%, #5c4a2a 100%)",
       order: 15,
-      active: false,
+      active: true,
     },
     {
       name: "Ros",
@@ -441,10 +442,16 @@ async function main() {
       // backgroundGradient/giftEmoji) på redan existerande rader (tidigare
       // gjorde loopen ingenting alls för befintliga items, så nameEn hade
       // samma hål - nu rättat för alla fält som kan behöva uppdateras).
-      // TILLAGD 2026-09-27 - även creditCost/active backfylls nu, annars
-      // skulle Christoffers redan skapade presentrader (från förra passet,
-      // active: false) aldrig faktiskt aktiveras av att köra seed igen -
-      // de fyra presenterna ovan har nu creditCost + active: true.
+      // TILLAGD 2026-09-27 - creditCost backfylls nu också.
+      // RÄTTAD 2026-09-27 (fjärde passet) - `active` backfylldes tidigare
+      // BARA för DIGITAL_GIFT (`item.category === "DIGITAL_GIFT" ? ... :
+      // undefined`), vilket var en bugg: när Onyx/Pärlvit/de fyra
+      // bakgrunderna ovan sattes till active: true i den här filen skulle
+      // den ändringen ALDRIG ha slagit igenom på redan existerande rader,
+      // eftersom deras kategori (FRAME/PROFILE_BACKGROUND) inte matchade
+      // villkoret. `prisma/seed.ts` är appens enda sanningskälla för pris
+      // OCH aktivering (se claude/velvetine-status.md) - active backfylls
+      // därför nu för alla kategorier, inte bara presenter.
       await prisma.storeItem.update({
         where: { id: existing.id },
         data: {
@@ -454,7 +461,7 @@ async function main() {
           backgroundGradient: "backgroundGradient" in item ? item.backgroundGradient : undefined,
           giftEmoji: "giftEmoji" in item ? item.giftEmoji : undefined,
           creditCost: "creditCost" in item ? item.creditCost : undefined,
-          active: item.category === "DIGITAL_GIFT" ? item.active : undefined,
+          active: item.active,
         },
       });
     }

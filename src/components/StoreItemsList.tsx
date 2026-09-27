@@ -277,7 +277,17 @@ export function StoreItemsList({
               )}
             </div>
 
-            {needsConfirmation && item.purchasable && (
+            {/* RÄTTAD 2026-09-27 (fjärde passet, se claude/velvetine-status.md) -
+                kryssrutan visades tidigare bara när item.purchasable (dvs.
+                bara när ett riktigt Stripe-pris fanns) - det gjorde att en
+                vara utan Stripe-pris men MED poängpris (t.ex. Onyx/Pärlvit/
+                bakgrunderna, aktiverade för poäng-köp innan Stripe var
+                tillbaka) aldrig visade kryssrutan alls, vilket i sin tur
+                gjorde att "confirmed" aldrig kunde bli sant och därmed
+                blockerade även "Lös in för poäng"-knappen helt i onödan.
+                Visar nu kryssrutan så fort NÅGOT köpsätt finns (kronor
+                ELLER poäng). */}
+            {needsConfirmation && (item.purchasable || item.creditCost != null) && (
               <label className="flex items-start gap-2 text-xs text-ivory-muted pl-1">
                 <input
                   type="checkbox"
