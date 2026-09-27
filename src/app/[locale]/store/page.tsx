@@ -93,14 +93,14 @@ export default async function StorePage({
         {!isStripeConfigured() && <p className="text-sm text-gold mb-6">{t("notConfigured")}</p>}
 
         <h2 className="text-ivory text-lg mb-3">{t("categoryFrames")}</h2>
-        <StoreItemsList items={frameItems} category="FRAME" />
+        <StoreItemsList items={frameItems} category="FRAME" giftCredits={user.giftCredits} />
 
         <h2 className="text-ivory text-lg mb-3 mt-10">{t("categoryChatThemes")}</h2>
-        <StoreItemsList items={chatThemeItems} category="CHAT_THEME" />
+        <StoreItemsList items={chatThemeItems} category="CHAT_THEME" giftCredits={user.giftCredits} />
 
         <h2 className="text-ivory text-lg mb-3 mt-10">{t("categoryBackgrounds")}</h2>
         <p className="text-sm text-ivory-muted mb-3">{t("categoryBackgroundsHint")}</p>
-        <StoreItemsList items={backgroundItems} category="PROFILE_BACKGROUND" />
+        <StoreItemsList items={backgroundItems} category="PROFILE_BACKGROUND" giftCredits={user.giftCredits} />
 
         <h2 className="text-ivory text-lg mb-3 mt-10">{t("categoryGifts")}</h2>
         <p className="text-sm text-ivory-muted mb-3">{t("categoryGiftsHint")}</p>

@@ -22,6 +22,11 @@ interface StoreItemData {
   // DIGITAL_GIFT. priceSek/owned/equipped/purchasable är oanvända för den
   // kategorin sedan presenter slutade vara en engångsköpt ägodel - se
   // grenen längst ner i denna fil.
+  // Poängkostnad. För DIGITAL_GIFT: vad det kostar att SKICKA presenten
+  // (se grenen längst ner i den här filen). ÄNDRAD 2026-09-27 (andra
+  // passet): för FRAME/CHAT_THEME/PROFILE_BACKGROUND betyder det istället
+  // att varan går att lösa in med poäng som ett ALTERNATIV till att köpa
+  // med kronor - se giftCredits-propen nedan och knappen "Köp med poäng".
   creditCost: number | null;
   owned: boolean;
   equipped: boolean;
@@ -92,13 +97,18 @@ function GiftPreview({ emoji }: { emoji: string }) {
 export function StoreItemsList({
   items,
   category,
+  giftCredits = 0,
 }: {
   items: StoreItemData[];
   category: StoreCategory;
+  // TILLAGD 2026-09-27 (andra passet) - saldo, för "Köp med poäng"-knappen
+  // nedan. Oanvänd för DIGITAL_GIFT-listan (den har ingen köpknapp alls).
+  giftCredits?: number;
 }) {
   const t = useTranslations("Store");
   const router = useRouter();
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [redeemError, setRedeemError] = useState<string | null>(null);
   // TILLAGD 2026-09-21 - kunden måste uttryckligen bekräfta pris/vara och
   // villkoren (inkl. att ångerrätten faller bort vid digitalt innehåll som
   // levereras direkt) innan köpknappen går att klicka på. Ren
@@ -132,6 +142,27 @@ export function StoreItemsList({
     setLoadingId(null);
   }
 
+  // TILLAGD 2026-09-27 (andra passet, se claude/velvetine-status.md) -
+  // alternativ till buy() ovan: löser in varan med poäng istället för att
+  // gå via Stripe. router.refresh() efteråt hämtar om ownership/saldo från
+  // servern, samma mönster som toggleEquip redan gör.
+  async function redeemWithCredits(itemId: string) {
+    setLoadingId(itemId);
+    setRedeemError(null);
+    const res = await fetch("/api/store/redeem", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ storeItemId: itemId }),
+    });
+    const data = await res.json().catch(() => null);
+    setLoadingId(null);
+    if (!res.ok) {
+      setRedeemError(data?.error ?? t("redeemFailed"));
+      return;
+    }
+    router.refresh();
+  }
+
   async function toggleEquip(itemId: string, currentlyEquipped: boolean) {
     setLoadingId(itemId);
     await fetch("/api/store/equip", {
@@ -149,6 +180,7 @@ export function StoreItemsList({
 
   return (
     <div className="flex flex-col gap-3">
+      {redeemError && <p className="text-xs text-ivory-muted">{redeemError}</p>}
       {items.map((item) => {
         // ÄNDRAD 2026-09-27 (se claude/velvetine-status.md): DIGITAL_GIFT är
         // sedan poängsystemet infördes ett rent katalogobjekt här - ingen
@@ -220,13 +252,28 @@ export function StoreItemsList({
                   {item.equipped ? t("unequip") : t("equip")}
                 </button>
               ) : (
-                <button
-                  onClick={() => buy(item.id)}
-                  disabled={!item.purchasable || !confirmed || loadingId === item.id}
-                  className="px-4 py-2 rounded-sm text-sm border border-gold text-ivory hover:bg-surface-raised disabled:opacity-50 shrink-0"
-                >
-                  {loadingId === item.id ? t("buying") : t("buy")}
-                </button>
+                <div className="flex flex-col gap-1.5 items-end shrink-0">
+                  <button
+                    onClick={() => buy(item.id)}
+                    disabled={!item.purchasable || !confirmed || loadingId === item.id}
+                    className="px-4 py-2 rounded-sm text-sm border border-gold text-ivory hover:bg-surface-raised disabled:opacity-50"
+                  >
+                    {loadingId === item.id ? t("buying") : t("buy")}
+                  </button>
+                  {/* TILLAGD 2026-09-27 (andra passet) - poäng-alternativet,
+                      bara för varor som faktiskt har en poängkostnad satt
+                      (item.creditCost). Kräver samma bekräftelsekryssruta
+                      som kronor-köpet ovan. */}
+                  {item.creditCost != null && (
+                    <button
+                      onClick={() => redeemWithCredits(item.id)}
+                      disabled={!confirmed || giftCredits < item.creditCost || loadingId === item.id}
+                      className="px-4 py-2 rounded-sm text-xs border border-border text-ivory-muted hover:border-gold hover:text-ivory disabled:opacity-40"
+                    >
+                      {t("redeemWithCredits", { cost: item.creditCost })}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
 

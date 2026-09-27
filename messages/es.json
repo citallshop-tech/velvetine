@@ -182,6 +182,8 @@
     "boostBody": "Aparece en la parte superior del feed de todos durante 30 minutos. Incluido a partir del nivel Selecto, una vez al día.",
     "boostButton": "Impulsar ahora",
     "boostActive": "Impulsado — quedan {minutes} min",
+    "boostWithCredits": "Impulsar por {cost} puntos",
+    "giftCreditsBalance": "Tienes {count} puntos",
     "boostCooldown": "Ya lo usaste hoy, inténtalo mañana",
     "boostLocked": "Requiere el nivel Selecto o superior."
   },
@@ -194,6 +196,8 @@
     "unequip": "Quitar",
     "buy": "Comprar",
     "buying": "Abriendo el pago...",
+    "redeemWithCredits": "Canjear por {cost} puntos",
+    "redeemFailed": "No se pudo canjear.",
     "notConfigured": "Los pagos aún no están configurados.",
     "purchased": "¡Listo! Tu nuevo marco ya está disponible.",
     "categoryFrames": "Marcos de perfil",
@@ -401,6 +405,9 @@
     "giftCreditsBalance": "Tienes {count} puntos",
     "buyMoreCredits": "Comprar más puntos",
     "giftFailed": "No se pudo enviar el regalo.",
+    "messageSendFailed": "No se pudo enviar el mensaje.",
+    "highlightMessage": "Destacar el mensaje",
+    "highlightMessageHint": "Destaca este mensaje por {cost} puntos",
     "noGiftsOwned": "Todavía no tienes ningún regalo.",
     "goToStore": "Ir a la Tienda"
   }

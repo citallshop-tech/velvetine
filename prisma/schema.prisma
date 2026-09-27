@@ -271,6 +271,13 @@ enum GiftCreditTransactionType {
   PURCHASE // poäng köpta via Stripe (GiftCreditPack)
   GIFT_SENT // poäng spenderade på att skicka en present i chatten
   ADMIN_ADJUSTMENT // manuell justering (t.ex. kompensation), aldrig automatisk
+  // TILLAGD 2026-09-27 (andra passet samma dag, se claude/velvetine-status.md)
+  // - Christoffer ville ha fler saker att spendera poäng på utöver
+  // presenter, byggt medan Stripe var otillgängligt (spendera poäng
+  // rör aldrig Stripe, bara att KÖPA fler poäng gör det).
+  STORE_ITEM_REDEEMED // en ram/chattfärg/profilbakgrund inlöst med poäng istället för kronor - se giftStoreItemId
+  BOOST_PURCHASED // en extra profil-boost köpt för poäng, se src/app/api/profile/boost/credits/route.ts
+  MESSAGE_HIGHLIGHTED // ett vanligt (icke-gåvo-)meddelande "lyft"/markerat för poäng, se Message.highlighted
 }
 
 // TILLAGD 2026-09-27 - ett litet, aldrig-raderat kvitto-spår för varje
@@ -288,9 +295,15 @@ model GiftCreditTransaction {
   balanceAfter   Int // saldot direkt efter denna rad - gör felsökning/kundsupport möjlig utan att räkna om hela historiken
   giftCreditPackId String?
   giftCreditPack GiftCreditPack?           @relation(fields: [giftCreditPackId], references: [id])
+  // ÄNDRAD 2026-09-27 (andra passet) - trots namnet inte längre bara för
+  // GIFT_SENT: samma fält återanvänds för STORE_ITEM_REDEEMED (vilken
+  // ram/chattfärg/bakgrund som löstes in). Döptes inte om till det mer
+  // generella "storeItemId" för att undvika en onödig kolumnbyte-risk i
+  // Christoffers redan levande databas - fältet betyder helt enkelt
+  // "vilken StoreItem, om någon, den här raden gäller".
   giftStoreItemId String?
   giftStoreItem  StoreItem?                @relation(fields: [giftStoreItemId], references: [id])
-  messageId      String?                   @unique // vilket Message denna GIFT_SENT-rad hörde till, om någon
+  messageId      String?                   @unique // vilket Message denna GIFT_SENT/MESSAGE_HIGHLIGHTED-rad hörde till, om någon
   // TILLAGD 2026-09-27 - Stripe Checkout Session-id för PURCHASE-rader,
   // unikt så att samma webhook-händelse aldrig kan krediteras två gånger
   // (Stripe garanterar inte "exactly once"-leverans, se webhook/route.ts).
@@ -593,6 +606,12 @@ model Message {
   // GiftCreditTransaction och src/app/api/matches/[matchId]/messages/route.ts.
   giftStoreItemId String?
   giftStoreItem   StoreItem? @relation(fields: [giftStoreItemId], references: [id])
+  // TILLAGD 2026-09-27 (andra passet, se claude/velvetine-status.md) - ett
+  // vanligt text-/bildmeddelande kan "lyftas"/markeras för poäng (se
+  // MESSAGE_HIGHLIGHTED i GiftCreditTransaction). Gäller ALDRIG samtidigt
+  // som en gåva (giftStoreItemId) - en gåva är redan visuellt utmärkande,
+  // se messages/route.ts där giftStoreItemId tvingar highlighted till false.
+  highlighted     Boolean    @default(false)
 
   @@index([matchId])
 }

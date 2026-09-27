@@ -182,6 +182,8 @@
     "boostBody": "Synas överst i allas flöde i 30 minuter. Ingår från nivån Utvald, en gång per dygn.",
     "boostButton": "Boosta nu",
     "boostActive": "Boostad — {minutes} min kvar",
+    "boostWithCredits": "Boosta för {cost} poäng",
+    "giftCreditsBalance": "Du har {count} poäng",
     "boostCooldown": "Redan använd idag, försök igen imorgon",
     "boostLocked": "Kräver nivå Utvald eller högre."
   },
@@ -194,6 +196,8 @@
     "unequip": "Ta av",
     "buy": "Köp",
     "buying": "Öppnar kassan...",
+    "redeemWithCredits": "Lös in för {cost} poäng",
+    "redeemFailed": "Kunde inte lösas in.",
     "notConfigured": "Betalning är inte konfigurerad ännu.",
     "purchased": "Klart! Din nya ram är redo att användas.",
     "categoryFrames": "Profilramar",
@@ -401,6 +405,9 @@
     "giftCreditsBalance": "Du har {count} poäng",
     "buyMoreCredits": "Köp fler poäng",
     "giftFailed": "Presenten kunde inte skickas.",
+    "messageSendFailed": "Meddelandet kunde inte skickas.",
+    "highlightMessage": "Lyft meddelandet",
+    "highlightMessageHint": "Lyft det här meddelandet för {cost} poäng",
     "noGiftsOwned": "Du äger inga presenter än.",
     "goToStore": "Gå till Butiken"
   }

@@ -182,6 +182,8 @@
     "boostBody": "Show at the top of everyone's feed for 30 minutes. Included from the Select tier, once per day.",
     "boostButton": "Boost now",
     "boostActive": "Boosted — {minutes} min left",
+    "boostWithCredits": "Boost for {cost} credits",
+    "giftCreditsBalance": "You have {count} credits",
     "boostCooldown": "Already used today, try again tomorrow",
     "boostLocked": "Requires the Select tier or higher."
   },
@@ -194,6 +196,8 @@
     "unequip": "Remove",
     "buy": "Buy",
     "buying": "Opening checkout...",
+    "redeemWithCredits": "Redeem for {cost} credits",
+    "redeemFailed": "Couldn't redeem this.",
     "notConfigured": "Payments aren't configured yet.",
     "purchased": "Done! Your new frame is ready to use.",
     "categoryFrames": "Profile frames",
@@ -401,6 +405,9 @@
     "giftCreditsBalance": "You have {count} credits",
     "buyMoreCredits": "Buy more credits",
     "giftFailed": "The gift couldn't be sent.",
+    "messageSendFailed": "The message couldn't be sent.",
+    "highlightMessage": "Highlight the message",
+    "highlightMessageHint": "Highlight this message for {cost} credits",
     "noGiftsOwned": "You don't own any gifts yet.",
     "goToStore": "Go to the Store"
   }

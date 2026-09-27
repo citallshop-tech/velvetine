@@ -6,6 +6,10 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 const POLL_INTERVAL_MS = 3000;
+// TILLAGD 2026-09-27 (andra passet samma dag, se claude/velvetine-status.md)
+// - måste matcha MESSAGE_HIGHLIGHT_CREDIT_COST i
+// src/app/api/matches/[matchId]/messages/route.ts.
+const MESSAGE_HIGHLIGHT_CREDIT_COST = 10;
 
 interface Message {
   id: string;
@@ -15,6 +19,9 @@ interface Message {
   giftEmoji?: string | null;
   senderId: string;
   createdAt: string;
+  // TILLAGD 2026-09-27 (andra passet) - "lyft"/markerat meddelande, se
+  // Message.highlighted i schema.prisma.
+  highlighted?: boolean;
 }
 
 interface GiftOption {
@@ -59,6 +66,9 @@ export function ChatThread({
   const [giftPickerOpen, setGiftPickerOpen] = useState(false);
   const [giftCredits, setGiftCredits] = useState(initialGiftCredits);
   const [giftError, setGiftError] = useState<string | null>(null);
+  // TILLAGD 2026-09-27 (andra passet) - "lyft det här meddelandet"-växeln,
+  // gäller bara nästa vanliga text-/bildmeddelande, aldrig en gåva.
+  const [highlightNext, setHighlightNext] = useState(false);
   const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => setMounted(true), []);
@@ -84,11 +94,12 @@ export function ChatThread({
     event.preventDefault();
     if (!text.trim() || sending) return;
 
+    setGiftError(null);
     setSending(true);
     const res = await fetch(`/api/matches/${matchId}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: text }),
+      body: JSON.stringify({ content: text, highlight: highlightNext }),
     });
     setSending(false);
 
@@ -96,6 +107,17 @@ export function ChatThread({
       const data = await res.json();
       setMessages((prev) => [...prev, data.message]);
       setText("");
+      // TILLAGD 2026-09-27 (andra passet) - lokal, optimistisk uppdatering
+      // av saldot, precis som sendGift redan gör. Servern är alltid den
+      // faktiska sanningskällan (nästa poll hämtar om exakt saldo ändå).
+      if (highlightNext) setGiftCredits((prev) => prev - MESSAGE_HIGHLIGHT_CREDIT_COST);
+      setHighlightNext(false);
+    } else {
+      // TILLAGD 2026-09-27 - fanns ingen felhantering här innan (ett
+      // misslyckat skickande försvann tyst). Framför allt viktigt nu när
+      // ett highlight-försök kan avslås pga för lågt poängsaldo (402).
+      const data = await res.json().catch(() => null);
+      setGiftError(data?.error ?? t("messageSendFailed"));
     }
   }
 
@@ -150,13 +172,18 @@ export function ChatThread({
     const messageRes = await fetch(`/api/matches/${matchId}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imageUrl: uploadData.url }),
+      body: JSON.stringify({ imageUrl: uploadData.url, highlight: highlightNext }),
     });
     setSending(false);
 
     if (messageRes.ok) {
       const data = await messageRes.json();
       setMessages((prev) => [...prev, data.message]);
+      if (highlightNext) setGiftCredits((prev) => prev - MESSAGE_HIGHLIGHT_CREDIT_COST);
+      setHighlightNext(false);
+    } else {
+      const data = await messageRes.json().catch(() => null);
+      setUploadError(data?.error ?? t("imageUploadFailed"));
     }
   }
 
@@ -187,7 +214,9 @@ export function ChatThread({
                 <button
                   type="button"
                   onClick={() => setLightboxUrl(m.imageUrl)}
-                  className="block max-w-[75%]"
+                  className={`block max-w-[75%] rounded-sm ${
+                    m.highlighted ? "ring-2 ring-gold shadow-[0_0_12px_rgba(217,182,103,0.5)]" : ""
+                  }`}
                   aria-label="Förstora bild"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element -- external Blob URLs, not local assets */}
@@ -205,6 +234,10 @@ export function ChatThread({
                         ? "text-ivory"
                         : "bg-wine text-ivory"
                       : "bg-surface text-ivory border border-border"
+                  } ${
+                    // TILLAGD 2026-09-27 (andra passet) - visuell markering
+                    // för ett "lyft" meddelande (se Message.highlighted).
+                    m.highlighted ? "ring-2 ring-gold shadow-[0_0_12px_rgba(217,182,103,0.5)]" : ""
                   }`}
                   style={isMine && chatTheme ? { backgroundColor: chatTheme.bubbleColor } : undefined}
                 >
@@ -293,6 +326,24 @@ export function ChatThread({
               </div>
             )}
           </div>
+
+          {/* TILLAGD 2026-09-27 (andra passet, se claude/velvetine-status.md)
+              - "lyft det här meddelandet"-växel. Gäller aldrig gåvor (se
+              sendGift ovan), bara vanlig text/bild via send()/handleFileSelected. */}
+          <button
+            type="button"
+            onClick={() => setHighlightNext((v) => !v)}
+            disabled={sending || giftCredits < MESSAGE_HIGHLIGHT_CREDIT_COST}
+            className={`px-3 rounded-sm border transition-colors disabled:opacity-40 ${
+              highlightNext
+                ? "border-gold bg-gold/20 text-gold"
+                : "border-border text-ivory-muted hover:border-gold"
+            }`}
+            aria-label={t("highlightMessage")}
+            title={t("highlightMessageHint", { cost: MESSAGE_HIGHLIGHT_CREDIT_COST })}
+          >
+            ✨
+          </button>
 
           <input
             value={text}

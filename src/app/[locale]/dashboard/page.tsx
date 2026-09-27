@@ -149,6 +149,7 @@ export default async function DashboardPage({
           <BoostButton
             hasAccess={(user.tier?.level ?? 0) >= MIN_TIER_LEVEL_FOR_BOOST}
             initialBoostedUntil={user.boostedUntil?.toISOString() ?? null}
+            giftCredits={user.giftCredits}
           />
         </section>
 

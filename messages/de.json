@@ -182,6 +182,8 @@
     "boostBody": "Erscheine 30 Minuten lang ganz oben in jedermanns Feed. Enthalten ab der Stufe Ausgewählt, einmal pro Tag.",
     "boostButton": "Jetzt boosten",
     "boostActive": "Geboostet — noch {minutes} Min.",
+    "boostWithCredits": "Für {cost} Punkte boosten",
+    "giftCreditsBalance": "Du hast {count} Punkte",
     "boostCooldown": "Heute schon genutzt, versuch es morgen wieder",
     "boostLocked": "Erfordert die Stufe Ausgewählt oder höher."
   },
@@ -194,6 +196,8 @@
     "unequip": "Entfernen",
     "buy": "Kaufen",
     "buying": "Kasse wird geöffnet...",
+    "redeemWithCredits": "Für {cost} Punkte einlösen",
+    "redeemFailed": "Konnte nicht eingelöst werden.",
     "notConfigured": "Zahlungen sind noch nicht eingerichtet.",
     "purchased": "Fertig! Dein neuer Rahmen ist einsatzbereit.",
     "categoryFrames": "Profilrahmen",
@@ -401,6 +405,9 @@
     "giftCreditsBalance": "Du hast {count} Punkte",
     "buyMoreCredits": "Mehr Punkte kaufen",
     "giftFailed": "Das Geschenk konnte nicht gesendet werden.",
+    "messageSendFailed": "Die Nachricht konnte nicht gesendet werden.",
+    "highlightMessage": "Nachricht hervorheben",
+    "highlightMessageHint": "Diese Nachricht für {cost} Punkte hervorheben",
     "noGiftsOwned": "Du besitzt noch keine Geschenke.",
     "goToStore": "Zum Shop"
   }

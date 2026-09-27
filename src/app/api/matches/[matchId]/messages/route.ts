@@ -21,6 +21,14 @@ export async function POST(
   // Ett meddelande är antingen text, bild eller present - aldrig flera på
   // en gång, precis som imageUrl redan var separat från content.
   const giftStoreItemId = typeof body.giftStoreItemId === "string" ? body.giftStoreItemId : null;
+  // TILLAGD 2026-09-27 (andra passet samma dag, se claude/velvetine-status.md)
+  // - "lyft"/markera ett VANLIGT meddelande för poäng. Gäller aldrig en
+  // gåva - den är redan visuellt utmärkande i chatten, så vi ignorerar
+  // flaggan tyst istället för att svara med ett fel (klienten erbjuder den
+  // aldrig samtidigt som en gåva, se ChatThread.tsx).
+  const wantsHighlight = !giftStoreItemId && body.highlight === true;
+  // Måste matcha samma konstant i src/components/ChatThread.tsx.
+  const MESSAGE_HIGHLIGHT_CREDIT_COST = 10;
 
   if (!content && !imageUrl && !giftStoreItemId) {
     return NextResponse.json({ error: "Tomt meddelande." }, { status: 400 });
@@ -41,14 +49,24 @@ export async function POST(
   // meddelandet skapas (prisma.$transaction nedan), med ett villkorat
   // updateMany (giftCredits >= creditCost) som skydd mot att två samtidiga
   // "skicka present"-klick skulle kunna dra saldot under noll.
-  let message;
+  // ÄNDRAD 2026-09-27 (andra passet) - generaliserad till att även täcka
+  // wantsHighlight (se ovan). De två är ömsesidigt uteslutande (highlight
+  // stängs av helt så fort giftStoreItemId finns), så det blir aldrig mer
+  // än EN poäng-transaktionsrad per meddelande - GiftCreditTransaction.
+  // messageId förblir därför unikt precis som innan.
+  let creditCost = 0;
   if (giftStoreItemId) {
     const giftItem = await prisma.storeItem.findUnique({ where: { id: giftStoreItemId } });
     if (!giftItem || giftItem.category !== "DIGITAL_GIFT" || !giftItem.active) {
       return NextResponse.json({ error: "Den här presenten går inte att skicka just nu." }, { status: 400 });
     }
-    const creditCost = giftItem.creditCost ?? 0;
+    creditCost = giftItem.creditCost ?? 0;
+  } else if (wantsHighlight) {
+    creditCost = MESSAGE_HIGHLIGHT_CREDIT_COST;
+  }
 
+  let message;
+  if (creditCost > 0) {
     try {
       message = await prisma.$transaction(async (tx) => {
         const deducted = await tx.user.updateMany({
@@ -73,6 +91,7 @@ export async function POST(
             content: content || null,
             imageUrl,
             giftStoreItemId,
+            highlighted: wantsHighlight,
           },
           include: { giftStoreItem: { select: { giftEmoji: true } } },
         });
@@ -80,7 +99,7 @@ export async function POST(
         await tx.giftCreditTransaction.create({
           data: {
             userId,
-            type: "GIFT_SENT",
+            type: giftStoreItemId ? "GIFT_SENT" : "MESSAGE_HIGHLIGHTED",
             amount: -creditCost,
             balanceAfter: updatedUser.giftCredits,
             giftStoreItemId,
@@ -93,7 +112,12 @@ export async function POST(
     } catch (err) {
       if (err instanceof Error && err.message === "INSUFFICIENT_CREDITS") {
         return NextResponse.json(
-          { error: "Du har inte tillräckligt med poäng för att skicka den här presenten.", code: "INSUFFICIENT_CREDITS" },
+          {
+            error: giftStoreItemId
+              ? "Du har inte tillräckligt med poäng för att skicka den här presenten."
+              : "Du har inte tillräckligt med poäng för att lyfta meddelandet.",
+            code: "INSUFFICIENT_CREDITS",
+          },
           { status: 402 }
         );
       }
@@ -107,6 +131,7 @@ export async function POST(
         content: content || null,
         imageUrl,
         giftStoreItemId: null,
+        highlighted: false,
       },
       include: { giftStoreItem: { select: { giftEmoji: true } } },
     });
@@ -168,6 +193,7 @@ export async function POST(
       giftEmoji: message.giftStoreItem?.giftEmoji ?? null,
       senderId: message.senderId,
       createdAt: message.createdAt.toISOString(),
+      highlighted: message.highlighted,
     },
   });
 }
@@ -221,6 +247,7 @@ export async function GET(
       giftEmoji: m.giftStoreItem?.giftEmoji ?? null,
       senderId: m.senderId,
       createdAt: m.createdAt.toISOString(),
+      highlighted: m.highlighted,
     })),
     otherLastReadAt: otherLastReadAt?.toISOString() ?? null,
     isActive: match.status === "ACTIVE",
