@@ -68,6 +68,14 @@ model User {
   equippedBackgroundId   String?
   lastViewedLikesAt      DateTime?
 
+  // TILLAGD 2026-09-27 - poäng-saldo för digitala presenter i chatten (se
+  // claude/velvetine-status.md). Presenter är INTE längre en
+  // UserStoreItem-ägodel man köper en gång och skickar hur många gånger
+  // som helst - varje skickad present drar av `creditCost` poäng härifrån
+  // (se GiftCreditTransaction). Poäng köps i paket (GiftCreditPack) via en
+  // vanlig Stripe-engångsbetalning, precis som StoreItem redan gör.
+  giftCredits            Int       @default(0)
+
   // Explicit, separate consent for processing gender/seekingGender - this
   // can reveal sexual orientation, which GDPR Art. 9 treats as a special
   // category needing its own consent, not one bundled into general ToS
@@ -90,6 +98,8 @@ model User {
   pushSubscriptions       PushSubscription[]
   storeItemPurchases      UserStoreItem[]
   safetyFlags             SafetyFlag[]
+  // TILLAGD 2026-09-27 - se giftCredits ovan.
+  giftCreditTransactions  GiftCreditTransaction[]
 
   discretionBlocksMade   DiscretionBlock[] @relation("DiscretionBlocker")
   discretionBlocksOnMe   DiscretionBlock[] @relation("DiscretionHidden")
@@ -188,10 +198,14 @@ enum StoreItemCategory {
   // TILLAGD 2026-09-21 - lyx-tillbehör runt 3:e byggpasset samma dag
   // (se claude/velvetine-status.md): PROFILE_BACKGROUND är en "utrustningsbar"
   // vara precis som FRAME/CHAT_THEME (en ägs, en är aktiv i taget, styrs via
-  // User.equippedBackgroundId nedan). DIGITAL_GIFT är annorlunda - den
-  // "utrustas" aldrig, den bara ägs och kan sedan skickas hur många gånger
-  // som helst i chatten (se Message.giftStoreItemId).
+  // User.equippedBackgroundId nedan).
   PROFILE_BACKGROUND
+  // ÄNDRAD 2026-09-27 (se claude/velvetine-status.md): DIGITAL_GIFT ägs INTE
+  // längre via UserStoreItem/Stripe - Christoffer var uttrycklig om att en
+  // present inte ska vara en engångsköpt, sen-för-alltid-återanvändbar sak.
+  // Den är nu ett rent katalogobjekt (namn/emoji/poängkostnad, se
+  // creditCost nedan) - att skicka den i chatten drar poäng från
+  // User.giftCredits varje gång, se GiftCreditTransaction.
   DIGITAL_GIFT
 }
 
@@ -208,8 +222,8 @@ model StoreItem {
   nameEs        String?
   description   String?
   category      StoreItemCategory
-  priceSek      Int // ören, one-time (not recurring)
-  stripePriceId String?           @unique
+  priceSek      Int // ören, one-time (not recurring). Oanvänt/0 för DIGITAL_GIFT sedan 2026-09-27, se creditCost.
+  stripePriceId String?           @unique // null för DIGITAL_GIFT sedan 2026-09-27 - de köps aldrig direkt, bara poängpaket gör.
   frameColor    String // hex - the frame's own color, independent of tier
   frameStyle    String // key describing the visual pattern (see FRAME_STYLES in ProfileCard)
   chatBubbleColor     String? // for CHAT_THEME items only - own message bubble color
@@ -218,12 +232,72 @@ model StoreItem {
   // samma valfria-fält-mönster som chatBubbleColor/chatBackgroundColor ovan.
   backgroundGradient  String? // for PROFILE_BACKGROUND only - CSS gradient shown behind the whole profile card
   giftEmoji           String? // for DIGITAL_GIFT only - the symbol shown when this gift is sent in chat
+  // TILLAGD 2026-09-27 - hur många poäng (User.giftCredits) det kostar att
+  // skicka DEN HÄR presenten en gång i chatten. Oanvänd för övriga kategorier.
+  creditCost          Int?
   active        Boolean           @default(true) // false = no longer sold, but past owners keep it
   order         Int               @default(0)
 
   purchases     UserStoreItem[]
   // TILLAGD 2026-09-21 - back-relation för Message.giftStoreItemId nedan.
   giftMessages  Message[]
+  // TILLAGD 2026-09-27 - back-relation för GiftCreditTransaction.giftStoreItemId nedan.
+  giftCreditTransactions GiftCreditTransaction[]
+}
+
+// TILLAGD 2026-09-27 - ett köpbart poängpaket (t.ex. "100 poäng för 39 kr").
+// Poäng är en ren intern, icke-återbetalningsbar valuta som bara går att
+// spendera på att skicka digitala presenter i chatten (se
+// User.giftCredits, GiftCreditTransaction) - inget kontantvärde, går inte
+// att lösa in eller överföra. Samma köpmönster som StoreItem: en vanlig
+// Stripe-engångsbetalning ("payment"-läge), se
+// src/app/api/store/credits/checkout/route.ts.
+model GiftCreditPack {
+  id            String   @id @default(cuid())
+  name          String
+  nameEn        String?
+  nameDe        String?
+  nameEs        String?
+  credits       Int // antal poäng paketet ger
+  priceSek      Int // ören, one-time
+  stripePriceId String?  @unique
+  active        Boolean  @default(true)
+  order         Int      @default(0)
+
+  transactions  GiftCreditTransaction[]
+}
+
+enum GiftCreditTransactionType {
+  PURCHASE // poäng köpta via Stripe (GiftCreditPack)
+  GIFT_SENT // poäng spenderade på att skicka en present i chatten
+  ADMIN_ADJUSTMENT // manuell justering (t.ex. kompensation), aldrig automatisk
+}
+
+// TILLAGD 2026-09-27 - ett litet, aldrig-raderat kvitto-spår för varje
+// förändring av User.giftCredits. Inte bara "trevligt att ha": det här är
+// pengar-i-praktiken (poäng köps för riktiga kronor), så om en kund
+// hör av sig och undrar vart poängen tog vägen måste det gå att slå upp
+// exakt, rad för rad - samma tanke som Christoffers krav på att aldrig
+// gissa på pengar/juridik.
+model GiftCreditTransaction {
+  id             String                    @id @default(cuid())
+  userId         String
+  user           User                      @relation(fields: [userId], references: [id])
+  type           GiftCreditTransactionType
+  amount         Int // positivt för PURCHASE/ADMIN_ADJUSTMENT (tillskott), negativt för GIFT_SENT (uttag)
+  balanceAfter   Int // saldot direkt efter denna rad - gör felsökning/kundsupport möjlig utan att räkna om hela historiken
+  giftCreditPackId String?
+  giftCreditPack GiftCreditPack?           @relation(fields: [giftCreditPackId], references: [id])
+  giftStoreItemId String?
+  giftStoreItem  StoreItem?                @relation(fields: [giftStoreItemId], references: [id])
+  messageId      String?                   @unique // vilket Message denna GIFT_SENT-rad hörde till, om någon
+  // TILLAGD 2026-09-27 - Stripe Checkout Session-id för PURCHASE-rader,
+  // unikt så att samma webhook-händelse aldrig kan krediteras två gånger
+  // (Stripe garanterar inte "exactly once"-leverans, se webhook/route.ts).
+  stripeCheckoutSessionId String?          @unique
+  createdAt      DateTime                  @default(now())
+
+  @@index([userId])
 }
 
 model UserStoreItem {
@@ -514,6 +588,9 @@ model Message {
   // TILLAGD 2026-09-21 - digitala presenter (se claude/velvetine-status.md).
   // Valfritt precis som imageUrl - ett meddelande är antingen text, bild
   // eller en present, aldrig flera samtidigt (UI:t skickar bara ett fält).
+  // ÄNDRAD 2026-09-27: att sätta detta fält förutsätter INTE längre ägande
+  // (UserStoreItem) - det drar istället poäng från User.giftCredits, se
+  // GiftCreditTransaction och src/app/api/matches/[matchId]/messages/route.ts.
   giftStoreItemId String?
   giftStoreItem   StoreItem? @relation(fields: [giftStoreItemId], references: [id])
 

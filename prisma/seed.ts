@@ -295,12 +295,13 @@ async function main() {
       nameEs: "Rosa",
       description: "En klassisk gest - skicka en ros i chatten.",
       category: "DIGITAL_GIFT" as const,
-      priceSek: 2900,
+      priceSek: 2900, // TILLAGD 2026-09-27: oanvänt sedan poängsystemet - se creditCost.
+      creditCost: 29,
       frameColor: "#5a2f3f", // unused for this category, placeholder
       frameStyle: "solid",
       giftEmoji: "🌹",
       order: 16,
-      active: false,
+      active: true,
     },
     {
       name: "Champagne",
@@ -310,11 +311,12 @@ async function main() {
       description: "Skål för matchningen.",
       category: "DIGITAL_GIFT" as const,
       priceSek: 3900,
+      creditCost: 39,
       frameColor: "#8a7355",
       frameStyle: "solid",
       giftEmoji: "🥂",
       order: 17,
-      active: false,
+      active: true,
     },
     {
       name: "Stjärnfall",
@@ -324,11 +326,12 @@ async function main() {
       description: "Något litet extra för att sticka ut.",
       category: "DIGITAL_GIFT" as const,
       priceSek: 4900,
+      creditCost: 49,
       frameColor: "#b8923f",
       frameStyle: "solid",
       giftEmoji: "🌠",
       order: 18,
-      active: false,
+      active: true,
     },
     {
       name: "Diamant-gåva",
@@ -338,11 +341,12 @@ async function main() {
       description: "Butikens mest exklusiva present.",
       category: "DIGITAL_GIFT" as const,
       priceSek: 7900,
+      creditCost: 79,
       frameColor: "#e8e6f0",
       frameStyle: "solid",
       giftEmoji: "💎",
       order: 19,
-      active: false,
+      active: true,
     },
   ];
 
@@ -355,6 +359,10 @@ async function main() {
       // backgroundGradient/giftEmoji) på redan existerande rader (tidigare
       // gjorde loopen ingenting alls för befintliga items, så nameEn hade
       // samma hål - nu rättat för alla fält som kan behöva uppdateras).
+      // TILLAGD 2026-09-27 - även creditCost/active backfylls nu, annars
+      // skulle Christoffers redan skapade presentrader (från förra passet,
+      // active: false) aldrig faktiskt aktiveras av att köra seed igen -
+      // de fyra presenterna ovan har nu creditCost + active: true.
       await prisma.storeItem.update({
         where: { id: existing.id },
         data: {
@@ -363,12 +371,38 @@ async function main() {
           nameEs: item.nameEs,
           backgroundGradient: "backgroundGradient" in item ? item.backgroundGradient : undefined,
           giftEmoji: "giftEmoji" in item ? item.giftEmoji : undefined,
+          creditCost: "creditCost" in item ? item.creditCost : undefined,
+          active: item.category === "DIGITAL_GIFT" ? item.active : undefined,
         },
       });
     }
   }
 
-  console.log(`Seeded ${TIERS.length} tiers, ${PROMPTS.length} prompts, ${INTERESTS.length} interests, ${STORE_ITEMS.length} store items.`);
+  // TILLAGD 2026-09-27 (se claude/velvetine-status.md) - poängpaket för att
+  // skicka digitala presenter i chatten. Priser satta med ungefär 1
+  // poäng ≈ 1 kr som grundkurs (matchar presenternas egna kr-priser ovan
+  // rakt av), med en liten mängdrabatt på de större paketen - vanligt för
+  // den här typen av virtuell valuta och en tydlig anledning att köpa
+  // större paket istället för många små.
+  const GIFT_CREDIT_PACKS = [
+    { name: "50 poäng", nameEn: "50 credits", nameDe: "50 Punkte", nameEs: "50 puntos", credits: 50, priceSek: 4900, order: 1 },
+    { name: "150 poäng", nameEn: "150 credits", nameDe: "150 Punkte", nameEs: "150 puntos", credits: 150, priceSek: 12900, order: 2 },
+    { name: "400 poäng", nameEn: "400 credits", nameDe: "400 Punkte", nameEs: "400 puntos", credits: 400, priceSek: 29900, order: 3 },
+  ];
+
+  for (const pack of GIFT_CREDIT_PACKS) {
+    const existing = await prisma.giftCreditPack.findFirst({ where: { name: pack.name } });
+    if (!existing) {
+      await prisma.giftCreditPack.create({ data: pack });
+    } else {
+      await prisma.giftCreditPack.update({
+        where: { id: existing.id },
+        data: { nameEn: pack.nameEn, nameDe: pack.nameDe, nameEs: pack.nameEs, credits: pack.credits, priceSek: pack.priceSek },
+      });
+    }
+  }
+
+  console.log(`Seeded ${TIERS.length} tiers, ${PROMPTS.length} prompts, ${INTERESTS.length} interests, ${STORE_ITEMS.length} store items, ${GIFT_CREDIT_PACKS.length} gift credit packs.`);
 }
 
 main()

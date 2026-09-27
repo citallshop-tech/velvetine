@@ -201,7 +201,11 @@
     "categoryBackgrounds": "Fondos de perfil",
     "categoryBackgroundsHint": "Un fondo detrás de toda tu tarjeta de perfil - visible en Explorar y en tu página de perfil.",
     "categoryGifts": "Regalos para enviar",
-    "categoryGiftsHint": "Cómpralo una vez, envíalo tantas veces como quieras en el chat con tus coincidencias.",
+    "categoryGiftsHint": "Envía en el chat a tus coincidencias - cada regalo cuesta puntos, mira abajo.",
+    "categoryCredits": "Comprar puntos",
+    "categoryCreditsHint": "Los puntos se usan para enviar regalos en el chat. Sin valor en efectivo y no se pueden canjear ni transferir.",
+    "giftCreditCost": "{count} puntos",
+    "giftCreditsBalance": "Tienes {count} puntos",
     "noItems": "Todavía no hay artículos en esta categoría.",
     "confirmPurchase": "Acepto los términos de la tienda - el precio y el artículo de arriba son correctos, y la compra se entrega de inmediato sin derecho de desistimiento.",
     "termsLinkLabel": "Leer los términos"
@@ -393,6 +397,10 @@
     "imageUploadFailed": "La imagen no se pudo enviar.",
     "sendGift": "Enviar regalo",
     "giftPickerTitle": "Elige un regalo",
+    "noGiftsAvailable": "No hay regalos para enviar en este momento.",
+    "giftCreditsBalance": "Tienes {count} puntos",
+    "buyMoreCredits": "Comprar más puntos",
+    "giftFailed": "No se pudo enviar el regalo.",
     "noGiftsOwned": "Todavía no tienes ningún regalo.",
     "goToStore": "Ir a la Tienda"
   }

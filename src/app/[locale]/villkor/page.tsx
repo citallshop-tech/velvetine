@@ -65,9 +65,10 @@ export default async function TermsPage({
           <p>
             In addition to the membership tiers, Velvetine offers a store
             with optional one-time purchases - including frames, chat
-            themes, profile backgrounds, and digital gifts that can be sent
-            to other members in chat. Each item is shown with its price in
-            the app before you buy it.
+            themes, and profile backgrounds. Each item is shown with its
+            price in the app before you buy it. Digital gifts that can be
+            sent to other members in chat are paid for separately with
+            credits - see section 4 below.
           </p>
           <p>
             This is digital content delivered directly to your account as
@@ -85,13 +86,39 @@ export default async function TermsPage({
           <p>
             Amounts already paid for store items are not refunded, except
             where Swedish or other applicable consumer law requires it.
-            Digital gifts sent to another member cannot be recalled or
-            exchanged once sent.
           </p>
         </section>
 
         <section>
-          <h2>4. Conduct</h2>
+          <h2>4. Gift credits (&ldquo;points&rdquo;)</h2>
+          <p>
+            Credits are an internal, virtual currency in Velvetine used
+            only to send digital gifts to other members in chat (see
+            section 3 above). Credits are bought in fixed packs for a
+            one-time payment; the price and the number of credits per pack
+            are shown in the app before you buy.
+          </p>
+          <p>
+            Credits have no cash value, cannot be redeemed for money,
+            transferred to another member, or used outside Velvetine.
+            Credits are added to your balance as soon as payment is
+            completed - this counts as digital content delivered
+            immediately, with the same consequence as for store items in
+            section 3: your right of withdrawal is lost from the moment of
+            delivery (Article 16(m) of the EU Consumer Rights Directive).
+            Amounts already paid for credits are not refunded, except
+            where Swedish or other applicable consumer law requires it.
+          </p>
+          <p>
+            Credits already spent on sending a gift cannot be recovered,
+            and a sent gift cannot be recalled or exchanged. If your
+            account is closed or deleted, any remaining credit balance is
+            forfeited without compensation.
+          </p>
+        </section>
+
+        <section>
+          <h2>5. Conduct</h2>
           <p>On Velvetine, or in contacts made through Velvetine, you may not:</p>
           <ul>
             <li>Harass, threaten, or demean other members</li>
@@ -104,12 +131,12 @@ export default async function TermsPage({
             What members choose to do with each other outside the platform
             is beyond our control, but we take active responsibility for
             safety on the platform through review, reporting, and the
-            actions described in section 5.
+            actions described in section 6.
           </p>
         </section>
 
         <section>
-          <h2>5. Reporting and enforcement</h2>
+          <h2>6. Reporting and enforcement</h2>
           <p>
             Any member can report another profile. Reports are reviewed by
             an administrator (with some AI assistance for severity
@@ -131,7 +158,7 @@ export default async function TermsPage({
         </section>
 
         <section>
-          <h2>6. Intellectual property</h2>
+          <h2>7. Intellectual property</h2>
           <p>
             You own the content you upload (photos, text). By posting it on
             Velvetine, you grant us the right to show it to other members of
@@ -141,17 +168,17 @@ export default async function TermsPage({
         </section>
 
         <section>
-          <h2>7. Limitation of liability</h2>
+          <h2>8. Limitation of liability</h2>
           <p>
             Velvetine is a meeting place, not a guarantee of how other people
             behave. We are not liable for actions members take toward each
             other outside our control, but we commit to handling reports
-            and acting under section 5.
+            and acting under section 6.
           </p>
         </section>
 
         <section>
-          <h2>8. Changes</h2>
+          <h2>9. Changes</h2>
           <p>
             We may update these terms. We&apos;ll notify you in the app or by
             email before material changes take effect, consistent with
@@ -160,7 +187,7 @@ export default async function TermsPage({
         </section>
 
         <section>
-          <h2>9. Governing law</h2>
+          <h2>10. Governing law</h2>
           <p>
             These terms are governed by Swedish law. If you&apos;re a consumer
             resident in another EU/EEA country, this doesn&apos;t take away the
@@ -173,7 +200,7 @@ export default async function TermsPage({
         </section>
 
         <section>
-          <h2>10. Contact</h2>
+          <h2>11. Contact</h2>
           <p>Questions about these terms: support@velvetine.app</p>
         </section>
       </LegalPage>
@@ -242,9 +269,10 @@ export default async function TermsPage({
           <p>
             Zusätzlich zu den Mitgliedschaftsstufen bietet Velvetine einen
             Shop mit optionalen Einmalkäufen an - darunter Rahmen,
-            Chat-Designs, Profilhintergründe und digitale Geschenke, die du
-            anderen Mitgliedern im Chat schicken kannst. Jede Ware wird vor
-            dem Kauf mit ihrem Preis in der App angezeigt.
+            Chat-Designs und Profilhintergründe. Jede Ware wird vor dem
+            Kauf mit ihrem Preis in der App angezeigt. Digitale Geschenke,
+            die du anderen Mitgliedern im Chat schicken kannst, werden
+            separat mit Punkten bezahlt - siehe Abschnitt 4 unten.
           </p>
           <p>
             Es handelt sich um digitale Inhalte, die sofort nach Abschluss
@@ -262,14 +290,44 @@ export default async function TermsPage({
           <p>
             Bereits gezahlte Beträge für Shop-Artikel werden nicht
             erstattet, außer soweit schwedisches oder anderes anwendbares
-            Verbraucherrecht dies vorschreibt. Digitale Geschenke, die an
-            ein anderes Mitglied gesendet wurden, können nach dem Versand
-            nicht zurückgerufen oder umgetauscht werden.
+            Verbraucherrecht dies vorschreibt.
           </p>
         </section>
 
         <section>
-          <h2>4. Verhalten</h2>
+          <h2>4. Punkte (&ldquo;Geschenkpunkte&rdquo;)</h2>
+          <p>
+            Punkte sind eine interne, virtuelle Währung in Velvetine, die
+            ausschließlich dazu dient, digitale Geschenke an andere
+            Mitglieder im Chat zu senden (siehe Abschnitt 3 oben). Punkte
+            werden in festen Paketen gegen eine Einmalzahlung gekauft; der
+            Preis und die Anzahl der Punkte pro Paket werden vor dem Kauf
+            in der App angezeigt.
+          </p>
+          <p>
+            Punkte haben keinen Bargeldwert, können nicht gegen Geld
+            eingelöst, an ein anderes Mitglied übertragen oder außerhalb
+            von Velvetine verwendet werden. Punkte werden deinem Guthaben
+            sofort nach Abschluss der Zahlung gutgeschrieben - das gilt
+            als sofort gelieferter digitaler Inhalt, mit derselben Folge
+            wie bei Shop-Artikeln in Abschnitt 3: dein gesetzliches
+            Widerrufsrecht erlischt ab dem Zeitpunkt der Lieferung (Art. 16
+            lit. m der EU-Verbraucherrechterichtlinie). Bereits gezahlte
+            Beträge für Punkte werden nicht erstattet, außer soweit
+            schwedisches oder anderes anwendbares Verbraucherrecht dies
+            vorschreibt.
+          </p>
+          <p>
+            Bereits für ein gesendetes Geschenk verwendete Punkte können
+            nicht zurückerstattet werden, und ein gesendetes Geschenk kann
+            nicht zurückgerufen oder umgetauscht werden. Wenn dein Konto
+            geschlossen oder gelöscht wird, verfällt ein verbleibendes
+            Punkteguthaben ersatzlos.
+          </p>
+        </section>
+
+        <section>
+          <h2>5. Verhalten</h2>
           <p>Auf Velvetine oder in über Velvetine entstandenen Kontakten darfst du nicht:</p>
           <ul>
             <li>Andere Mitglieder belästigen, bedrohen oder herabwürdigen</li>
@@ -282,13 +340,13 @@ export default async function TermsPage({
             Was Mitglieder außerhalb der Plattform miteinander vereinbaren,
             liegt außerhalb unserer Kontrolle, aber wir übernehmen aktiv
             Verantwortung für die Sicherheit auf der Plattform durch
-            Überprüfung, Meldungen und die in Abschnitt 5 beschriebenen
+            Überprüfung, Meldungen und die in Abschnitt 6 beschriebenen
             Maßnahmen.
           </p>
         </section>
 
         <section>
-          <h2>5. Meldungen und Maßnahmen</h2>
+          <h2>6. Meldungen und Maßnahmen</h2>
           <p>
             Jedes Mitglied kann ein anderes Profil melden. Meldungen werden
             von einem Administrator geprüft (mit gewisser KI-Unterstützung
@@ -312,7 +370,7 @@ export default async function TermsPage({
         </section>
 
         <section>
-          <h2>6. Geistiges Eigentum</h2>
+          <h2>7. Geistiges Eigentum</h2>
           <p>
             Die von dir hochgeladenen Inhalte (Fotos, Texte) gehören dir.
             Indem du sie auf Velvetine veröffentlichst, räumst du uns das
@@ -323,18 +381,18 @@ export default async function TermsPage({
         </section>
 
         <section>
-          <h2>7. Haftungsbeschränkung</h2>
+          <h2>8. Haftungsbeschränkung</h2>
           <p>
             Velvetine ist ein Ort zum Kennenlernen, keine Garantie für das
             Verhalten anderer Personen. Wir haften nicht für Handlungen,
             die Mitglieder außerhalb unserer Kontrolle gegeneinander
             vornehmen, verpflichten uns aber, Meldungen zu bearbeiten und
-            gemäß Abschnitt 5 zu handeln.
+            gemäß Abschnitt 6 zu handeln.
           </p>
         </section>
 
         <section>
-          <h2>8. Änderungen</h2>
+          <h2>9. Änderungen</h2>
           <p>
             Wir können diese Bedingungen aktualisieren. Wir benachrichtigen
             dich in der App oder per E-Mail, bevor wesentliche Änderungen
@@ -343,7 +401,7 @@ export default async function TermsPage({
         </section>
 
         <section>
-          <h2>9. Anwendbares Recht</h2>
+          <h2>10. Anwendbares Recht</h2>
           <p>
             Für diese Bedingungen gilt schwedisches Recht. Wenn du als
             Verbraucher in einem anderen EU-/EWR-Land ansässig bist, nimmt
@@ -357,7 +415,7 @@ export default async function TermsPage({
         </section>
 
         <section>
-          <h2>10. Kontakt</h2>
+          <h2>11. Kontakt</h2>
           <p>Fragen zu diesen Bedingungen: support@velvetine.app</p>
         </section>
       </LegalPage>
@@ -422,9 +480,10 @@ export default async function TermsPage({
           <p>
             Además de los niveles de membresía, Velvetine ofrece una tienda
             con compras únicas opcionales - entre ellas marcos, temas de
-            chat, fondos de perfil y regalos digitales que se pueden enviar
-            a otros miembros en el chat. Cada artículo se muestra con su
-            precio en la aplicación antes de comprarlo.
+            chat y fondos de perfil. Cada artículo se muestra con su precio
+            en la aplicación antes de comprarlo. Los regalos digitales que
+            se pueden enviar a otros miembros en el chat se pagan por
+            separado con puntos - ver la sección 4 más abajo.
           </p>
           <p>
             Se trata de contenido digital que se entrega directamente a tu
@@ -442,14 +501,43 @@ export default async function TermsPage({
           <p>
             Los importes ya pagados por artículos de la tienda no se
             reembolsan, salvo cuando la legislación sueca u otra normativa
-            de protección al consumidor aplicable lo exija. Los regalos
-            digitales enviados a otro miembro no se pueden recuperar ni
-            cambiar una vez enviados.
+            de protección al consumidor aplicable lo exija.
           </p>
         </section>
 
         <section>
-          <h2>4. Conducta</h2>
+          <h2>4. Puntos (&ldquo;puntos de regalo&rdquo;)</h2>
+          <p>
+            Los puntos son una moneda interna y virtual de Velvetine que se
+            usa únicamente para enviar regalos digitales a otros miembros en
+            el chat (ver la sección 3 anterior). Los puntos se compran en
+            paquetes fijos mediante un pago único; el precio y la cantidad
+            de puntos por paquete se muestran en la aplicación antes de la
+            compra.
+          </p>
+          <p>
+            Los puntos no tienen valor en efectivo, no se pueden canjear por
+            dinero, transferir a otro miembro ni usar fuera de Velvetine.
+            Los puntos se añaden a tu saldo en cuanto se completa el pago -
+            esto se considera contenido digital entregado de forma
+            inmediata, con la misma consecuencia que para los artículos de
+            la tienda en la sección 3: tu derecho de desistimiento se pierde
+            a partir del momento de la entrega (artículo 16, letra m, de la
+            Directiva de la UE sobre derechos de los consumidores). Los
+            importes ya pagados por puntos no se reembolsan, salvo cuando la
+            legislación sueca u otra normativa de protección al consumidor
+            aplicable lo exija.
+          </p>
+          <p>
+            Los puntos ya utilizados para enviar un regalo no se pueden
+            recuperar, y un regalo enviado no se puede recuperar ni
+            cambiar. Si tu cuenta se cierra o se elimina, cualquier saldo de
+            puntos restante se pierde sin compensación.
+          </p>
+        </section>
+
+        <section>
+          <h2>5. Conducta</h2>
           <p>En Velvetine, o en los contactos establecidos a través de Velvetine, no puedes:</p>
           <ul>
             <li>Acosar, amenazar o menospreciar a otros miembros</li>
@@ -462,12 +550,12 @@ export default async function TermsPage({
             Lo que los miembros decidan hacer entre ellos fuera de la
             plataforma escapa a nuestro control, pero asumimos activamente
             la responsabilidad de la seguridad en la plataforma mediante la
-            revisión, los reportes y las medidas descritas en la sección 5.
+            revisión, los reportes y las medidas descritas en la sección 6.
           </p>
         </section>
 
         <section>
-          <h2>5. Reportes y medidas</h2>
+          <h2>6. Reportes y medidas</h2>
           <p>
             Cualquier miembro puede reportar otro perfil. Los reportes son
             revisados por un administrador (con cierta ayuda de IA para
@@ -490,7 +578,7 @@ export default async function TermsPage({
         </section>
 
         <section>
-          <h2>6. Propiedad intelectual</h2>
+          <h2>7. Propiedad intelectual</h2>
           <p>
             El contenido que subes (fotos, texto) es tuyo. Al publicarlo en
             Velvetine, nos concedes el derecho de mostrarlo a otros
@@ -500,18 +588,18 @@ export default async function TermsPage({
         </section>
 
         <section>
-          <h2>7. Limitación de responsabilidad</h2>
+          <h2>8. Limitación de responsabilidad</h2>
           <p>
             Velvetine es un lugar de encuentro, no una garantía del
             comportamiento de otras personas. No somos responsables de las
             acciones que los miembros lleven a cabo entre sí fuera de
             nuestro control, pero nos comprometemos a gestionar los
-            reportes y actuar conforme a la sección 5.
+            reportes y actuar conforme a la sección 6.
           </p>
         </section>
 
         <section>
-          <h2>8. Cambios</h2>
+          <h2>9. Cambios</h2>
           <p>
             Podemos actualizar estos términos. Te avisaremos en la
             aplicación o por correo electrónico antes de que entren en
@@ -520,7 +608,7 @@ export default async function TermsPage({
         </section>
 
         <section>
-          <h2>9. Ley aplicable</h2>
+          <h2>10. Ley aplicable</h2>
           <p>
             Estos términos se rigen por la ley sueca. Si eres consumidor
             residente en otro país de la UE/EEE, esto no elimina los
@@ -534,7 +622,7 @@ export default async function TermsPage({
         </section>
 
         <section>
-          <h2>10. Contacto</h2>
+          <h2>11. Contacto</h2>
           <p>Preguntas sobre estos términos: support@velvetine.app</p>
         </section>
       </LegalPage>
@@ -589,10 +677,11 @@ export default async function TermsPage({
         <h2>3. Butiken och engångsköp</h2>
         <p>
           Utöver medlemsnivåerna erbjuder Velvetine en butik med
-          valfria engångsköp - bland annat ramar, chattfärger,
-          profilbakgrunder och digitala gåvor som kan skickas till andra
-          medlemmar i chatten. Varje vara visas med sitt pris i appen
-          innan du köper den.
+          valfria engångsköp - bland annat ramar, chattfärger och
+          profilbakgrunder. Varje vara visas med sitt pris i appen
+          innan du köper den. Digitala gåvor som kan skickas till andra
+          medlemmar i chatten betalas separat med poäng - se punkt 4
+          nedan.
         </p>
         <p>
           Det här är digitalt innehåll som levereras direkt till ditt
@@ -611,14 +700,42 @@ export default async function TermsPage({
         <p>
           Belopp som redan betalats för butiksvaror återbetalas inte,
           förutom där svensk eller annan tillämplig
-          konsumentlagstiftning kräver det. Digitala gåvor som skickas
-          till en annan medlem kan inte återkallas eller bytas ut när de
-          har skickats.
+          konsumentlagstiftning kräver det.
         </p>
       </section>
 
       <section>
-        <h2>4. Uppförande</h2>
+        <h2>4. Poäng (&ldquo;presentpoäng&rdquo;)</h2>
+        <p>
+          Poäng är en intern, virtuell valuta i Velvetine som endast
+          används för att skicka digitala gåvor till andra medlemmar i
+          chatten (se punkt 3 ovan). Poäng köps i förutbestämda paket mot
+          en engångsbetalning; priset och antalet poäng per paket visas i
+          appen innan köpet genomförs.
+        </p>
+        <p>
+          Poäng har inget kontantvärde, går inte att lösa in mot pengar,
+          överföra till en annan medlem eller använda utanför Velvetine.
+          Poäng läggs till ditt saldo direkt när betalningen är
+          genomförd - det räknas som digitalt innehåll som levereras
+          direkt, med samma följd som för butiksvaror i punkt 3: din
+          ångerrätt går förlorad från och med leveransen (2 kap. 11 §
+          punkt 13 lagen om distansavtal och avtal utanför
+          affärslokaler, som genomför artikel 16 m i EU:s
+          konsumenträttighetsdirektiv). Belopp som redan betalats för
+          poäng återbetalas inte, förutom där svensk eller annan
+          tillämplig konsumentlagstiftning kräver det.
+        </p>
+        <p>
+          Poäng som redan förbrukats för att skicka en gåva kan inte
+          återfås, och en skickad gåva kan inte återkallas eller bytas
+          ut. Om ditt konto avslutas eller raderas förfaller eventuellt
+          kvarvarande poängsaldo utan ersättning.
+        </p>
+      </section>
+
+      <section>
+        <h2>5. Uppförande</h2>
         <p>Du får inte, på Velvetine eller i kontakter som uppstått via Velvetine:</p>
         <ul>
           <li>Trakassera, hota eller kränka andra medlemmar</li>
@@ -631,12 +748,12 @@ export default async function TermsPage({
           Vad medlemmar väljer att göra sinsemellan utanför plattformen
           ligger utanför vår kontroll, men vi tar aktivt ansvar för
           säkerheten på plattformen genom granskning, rapportering och
-          åtgärder enligt punkt 5.
+          åtgärder enligt punkt 6.
         </p>
       </section>
 
       <section>
-        <h2>5. Rapportering och åtgärder</h2>
+        <h2>6. Rapportering och åtgärder</h2>
         <p>
           Alla medlemmar kan rapportera en annan profil. Rapporter granskas
           av en administratör (med visst AI-stöd för att bedöma
@@ -658,7 +775,7 @@ export default async function TermsPage({
       </section>
 
       <section>
-        <h2>6. Immateriella rättigheter</h2>
+        <h2>7. Immateriella rättigheter</h2>
         <p>
           Du äger innehållet du laddar upp (bilder, texter). Genom att
           publicera det på Velvetine ger du oss rätt att visa det för andra
@@ -668,17 +785,17 @@ export default async function TermsPage({
       </section>
 
       <section>
-        <h2>7. Ansvarsbegränsning</h2>
+        <h2>8. Ansvarsbegränsning</h2>
         <p>
           Velvetine är en mötesplats, inte en garanti för hur andra personer
           uppträder. Vi ansvarar inte för handlingar som medlemmar utför
           gentemot varandra utanför vår kontroll, men vi åtar oss att
-          hantera rapporter och agera enligt punkt 5.
+          hantera rapporter och agera enligt punkt 6.
         </p>
       </section>
 
       <section>
-        <h2>8. Ändringar</h2>
+        <h2>9. Ändringar</h2>
         <p>
           Vi kan uppdatera dessa villkor. Vi meddelar dig i appen eller via
           e-post innan väsentliga ändringar träder i kraft, i enlighet med
@@ -687,7 +804,7 @@ export default async function TermsPage({
       </section>
 
       <section>
-        <h2>9. Tillämplig lag</h2>
+        <h2>10. Tillämplig lag</h2>
         <p>
           Svensk lag gäller för dessa villkor. Om du är konsument bosatt i
           ett annat EU/EES-land tar det här inte bort de tvingande
@@ -699,7 +816,7 @@ export default async function TermsPage({
       </section>
 
       <section>
-        <h2>10. Kontakt</h2>
+        <h2>11. Kontakt</h2>
         <p>Frågor om villkoren: support@velvetine.app</p>
       </section>
     </LegalPage>

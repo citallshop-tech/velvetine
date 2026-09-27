@@ -54,14 +54,53 @@ export async function POST(request: NextRequest) {
       const userId = session.metadata?.userId;
 
       if (session.mode === "payment") {
-        // One-time store item purchase, not a subscription.
-        const storeItemId = session.metadata?.storeItemId;
-        if (userId && storeItemId) {
-          await prisma.userStoreItem.upsert({
-            where: { userId_storeItemId: { userId, storeItemId } },
-            create: { userId, storeItemId },
-            update: {},
+        // TILLAGD 2026-09-27 - poängpaket (GiftCreditPack), se
+        // claude/velvetine-status.md. Skiljs från ett vanligt StoreItem-köp
+        // nedan via metadata.giftCreditPackId. $transaction så att
+        // saldot (User.giftCredits) och kvittoraden (GiftCreditTransaction)
+        // alltid ändras tillsammans, aldrig bara den ena.
+        const giftCreditPackId = session.metadata?.giftCreditPackId;
+        if (userId && giftCreditPackId) {
+          // Idempotens: samma Checkout Session kan i sällsynta fall ge
+          // samma webhook-händelse mer än en gång (Stripes egen
+          // rekommendation är att alltid räkna med det) - dedupas på
+          // Checkout Session-idt (unikt fält), inte på tid/gissning, så att
+          // två SEPARATA köp av samma paket strax efter varandra aldrig
+          // felaktigt räknas som samma händelse.
+          const alreadyProcessed = await prisma.giftCreditTransaction.findUnique({
+            where: { stripeCheckoutSessionId: session.id },
           });
+          if (!alreadyProcessed) {
+            const pack = await prisma.giftCreditPack.findUnique({ where: { id: giftCreditPackId } });
+            if (pack) {
+              await prisma.$transaction(async (tx) => {
+                const updatedUser = await tx.user.update({
+                  where: { id: userId },
+                  data: { giftCredits: { increment: pack.credits } },
+                });
+                await tx.giftCreditTransaction.create({
+                  data: {
+                    userId,
+                    type: "PURCHASE",
+                    amount: pack.credits,
+                    balanceAfter: updatedUser.giftCredits,
+                    giftCreditPackId: pack.id,
+                    stripeCheckoutSessionId: session.id,
+                  },
+                });
+              });
+            }
+          }
+        } else {
+          // One-time store item purchase, not a subscription.
+          const storeItemId = session.metadata?.storeItemId;
+          if (userId && storeItemId) {
+            await prisma.userStoreItem.upsert({
+              where: { userId_storeItemId: { userId, storeItemId } },
+              create: { userId, storeItemId },
+              update: {},
+            });
+          }
         }
         break;
       }

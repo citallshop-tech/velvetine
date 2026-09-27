@@ -201,7 +201,11 @@
     "categoryBackgrounds": "Profile backgrounds",
     "categoryBackgroundsHint": "A background theme behind your whole profile card - visible in Discover and on your profile page.",
     "categoryGifts": "Gifts to send",
-    "categoryGiftsHint": "Buy once, send as many times as you like in chat with your matches.",
+    "categoryGiftsHint": "Send in chat to your matches - each gift costs credits, see below.",
+    "categoryCredits": "Buy credits",
+    "categoryCreditsHint": "Credits are used to send gifts in chat. No cash value and can't be redeemed or transferred.",
+    "giftCreditCost": "{count} credits",
+    "giftCreditsBalance": "You have {count} credits",
     "noItems": "No items in this category yet.",
     "confirmPurchase": "I agree to the store terms - the price and item above are correct, and the purchase is delivered immediately with no right of withdrawal.",
     "termsLinkLabel": "Read the terms"
@@ -393,6 +397,10 @@
     "imageUploadFailed": "The image couldn't be sent.",
     "sendGift": "Send gift",
     "giftPickerTitle": "Choose a gift",
+    "noGiftsAvailable": "No gifts to send right now.",
+    "giftCreditsBalance": "You have {count} credits",
+    "buyMoreCredits": "Buy more credits",
+    "giftFailed": "The gift couldn't be sent.",
     "noGiftsOwned": "You don't own any gifts yet.",
     "goToStore": "Go to the Store"
   }

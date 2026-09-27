@@ -201,7 +201,11 @@
     "categoryBackgrounds": "Profilhintergrund",
     "categoryBackgroundsHint": "Ein Hintergrundthema hinter deiner gesamten Profilkarte - sichtbar in Entdecken und auf deiner Profilseite.",
     "categoryGifts": "Geschenke zum Versenden",
-    "categoryGiftsHint": "Einmal kaufen, so oft du willst im Chat mit deinen Matches verschicken.",
+    "categoryGiftsHint": "Im Chat an deine Matches senden - jedes Geschenk kostet Punkte, siehe unten.",
+    "categoryCredits": "Punkte kaufen",
+    "categoryCreditsHint": "Punkte werden verwendet, um Geschenke im Chat zu senden. Kein Bargeldwert, nicht einlösbar oder übertragbar.",
+    "giftCreditCost": "{count} Punkte",
+    "giftCreditsBalance": "Du hast {count} Punkte",
     "noItems": "Noch keine Artikel in dieser Kategorie.",
     "confirmPurchase": "Ich stimme den Shop-Bedingungen zu - Preis und Artikel oben sind korrekt, und der Kauf wird sofort geliefert, ohne Widerrufsrecht.",
     "termsLinkLabel": "AGB lesen"
@@ -393,6 +397,10 @@
     "imageUploadFailed": "Das Bild konnte nicht gesendet werden.",
     "sendGift": "Geschenk senden",
     "giftPickerTitle": "Wähle ein Geschenk",
+    "noGiftsAvailable": "Gerade keine Geschenke zum Senden verfügbar.",
+    "giftCreditsBalance": "Du hast {count} Punkte",
+    "buyMoreCredits": "Mehr Punkte kaufen",
+    "giftFailed": "Das Geschenk konnte nicht gesendet werden.",
     "noGiftsOwned": "Du besitzt noch keine Geschenke.",
     "goToStore": "Zum Shop"
   }

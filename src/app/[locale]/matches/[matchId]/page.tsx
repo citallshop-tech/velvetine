@@ -55,7 +55,7 @@ export default async function MatchThreadPage({
 
   const me = await prisma.user.findUnique({
     where: { id: userId },
-    select: { tier: { select: { level: true } }, equippedChatThemeId: true },
+    select: { tier: { select: { level: true } }, equippedChatThemeId: true, giftCredits: true },
   });
   const hasReadReceipts = (me?.tier?.level ?? 0) >= MIN_TIER_LEVEL_FOR_READ_RECEIPTS;
 
@@ -63,20 +63,20 @@ export default async function MatchThreadPage({
     ? await prisma.storeItem.findUnique({ where: { id: me.equippedChatThemeId } })
     : null;
 
-  // TILLAGD 2026-09-21 - digitala presenter man äger, för
-  // gåvo-väljaren i ChatThread.tsx (se claude/velvetine-status.md).
-  const ownedGiftPurchases = await prisma.userStoreItem.findMany({
-    where: { userId, storeItem: { category: "DIGITAL_GIFT" } },
-    include: { storeItem: true },
-    orderBy: { storeItem: { order: "asc" } },
+  // ÄNDRAD 2026-09-27 (se claude/velvetine-status.md): presenter ägs inte
+  // längre - visa ALLA aktiva presenter i väljaren (inte bara tidigare
+  // köpta), var och en med sin poängkostnad. ChatThread avgör själv (via
+  // giftCredits nedan) vilka som går att klicka på just nu.
+  const availableGiftItems = await prisma.storeItem.findMany({
+    where: { category: "DIGITAL_GIFT", active: true, giftEmoji: { not: null } },
+    orderBy: { order: "asc" },
   });
-  const ownedGifts = ownedGiftPurchases
-    .filter((p) => p.storeItem.giftEmoji)
-    .map((p) => ({
-      id: p.storeItem.id,
-      emoji: p.storeItem.giftEmoji!,
-      name: pickLocalized(locale, p.storeItem.name, p.storeItem.nameEn, p.storeItem.nameDe, p.storeItem.nameEs),
-    }));
+  const gifts = availableGiftItems.map((item) => ({
+    id: item.id,
+    emoji: item.giftEmoji!,
+    name: pickLocalized(locale, item.name, item.nameEn, item.nameDe, item.nameEs),
+    creditCost: item.creditCost ?? 0,
+  }));
 
   const other = match.userAId === userId ? match.userB : match.userA;
   const h = await getTranslations("Header");
@@ -116,7 +116,8 @@ export default async function MatchThreadPage({
         isActive={match.status === "ACTIVE"}
         hasReadReceipts={hasReadReceipts}
         otherLastReadAt={otherLastReadAt?.toISOString() ?? null}
-        ownedGifts={ownedGifts}
+        gifts={gifts}
+        giftCredits={me?.giftCredits ?? 0}
         chatTheme={
           chatThemeItem && chatThemeItem.chatBubbleColor && chatThemeItem.chatBackgroundColor
             ? { bubbleColor: chatThemeItem.chatBubbleColor, backgroundColor: chatThemeItem.chatBackgroundColor }

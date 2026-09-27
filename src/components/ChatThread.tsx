@@ -17,10 +17,14 @@ interface Message {
   createdAt: string;
 }
 
-interface OwnedGift {
+interface GiftOption {
   id: string;
   emoji: string;
   name: string;
+  // TILLAGD 2026-09-27 (se claude/velvetine-status.md) - poängkostnad att
+  // skicka den HÄR presenten en gång. Presenter ägs inte längre - alla
+  // aktiva presenter visas alltid, kostnaden avgör om man har råd just nu.
+  creditCost: number;
 }
 
 export function ChatThread({
@@ -31,7 +35,8 @@ export function ChatThread({
   hasReadReceipts = false,
   otherLastReadAt: initialOtherLastReadAt = null,
   chatTheme = null,
-  ownedGifts = [],
+  gifts = [],
+  giftCredits: initialGiftCredits = 0,
 }: {
   matchId: string;
   currentUserId: string;
@@ -40,7 +45,8 @@ export function ChatThread({
   hasReadReceipts?: boolean;
   otherLastReadAt?: string | null;
   chatTheme?: { bubbleColor: string; backgroundColor: string } | null;
-  ownedGifts?: OwnedGift[];
+  gifts?: GiftOption[];
+  giftCredits?: number;
 }) {
   const t = useTranslations("Chat");
   const [messages, setMessages] = useState(initialMessages);
@@ -51,6 +57,8 @@ export function ChatThread({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [giftPickerOpen, setGiftPickerOpen] = useState(false);
+  const [giftCredits, setGiftCredits] = useState(initialGiftCredits);
+  const [giftError, setGiftError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => setMounted(true), []);
@@ -91,22 +99,28 @@ export function ChatThread({
     }
   }
 
-  // TILLAGD 2026-09-21 - skicka en ägd digital present (se
-  // claude/velvetine-status.md). Samma POST-endpoint som text/bild, bara
-  // giftStoreItemId istället för content/imageUrl.
-  async function sendGift(storeItemId: string) {
+  // ÄNDRAD 2026-09-27 (se claude/velvetine-status.md) - skicka en present
+  // drar nu poäng varje gång (servern gör det atomärt och är den enda
+  // sanningskällan för saldot - den lokala giftCredits-uppdateringen här är
+  // bara en optimistisk snabb uppdatering av siffran i UI:t).
+  async function sendGift(gift: GiftOption) {
     if (sending) return;
+    setGiftError(null);
     setGiftPickerOpen(false);
     setSending(true);
     const res = await fetch(`/api/matches/${matchId}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ giftStoreItemId: storeItemId }),
+      body: JSON.stringify({ giftStoreItemId: gift.id }),
     });
     setSending(false);
     if (res.ok) {
       const data = await res.json();
       setMessages((prev) => [...prev, data.message]);
+      setGiftCredits((prev) => prev - gift.creditCost);
+    } else {
+      const data = await res.json().catch(() => null);
+      setGiftError(data?.error ?? t("giftFailed"));
     }
   }
 
@@ -211,6 +225,7 @@ export function ChatThread({
       </div>
 
       {uploadError && <p className="text-xs text-ivory-muted mb-2">{uploadError}</p>}
+      {giftError && <p className="text-xs text-ivory-muted mb-2">{giftError}</p>}
 
       {isActive ? (
         <form onSubmit={send} className="flex gap-2">
@@ -243,31 +258,38 @@ export function ChatThread({
               🎁
             </button>
             {giftPickerOpen && (
-              <div className="absolute bottom-full mb-2 left-0 w-56 bg-surface border border-border rounded-sm shadow-lg p-2 z-20">
-                <p className="text-xs text-ivory-muted px-1 pb-1.5">{t("giftPickerTitle")}</p>
-                {ownedGifts.length === 0 ? (
-                  <div className="px-1 py-1.5">
-                    <p className="text-xs text-ivory-muted mb-2">{t("noGiftsOwned")}</p>
-                    <Link href="/store" className="text-xs text-gold hover:text-gold-bright">
-                      {t("goToStore")} →
-                    </Link>
-                  </div>
+              <div className="absolute bottom-full mb-2 left-0 w-64 bg-surface border border-border rounded-sm shadow-lg p-2 z-20">
+                <div className="flex items-center justify-between px-1 pb-1.5">
+                  <p className="text-xs text-ivory-muted">{t("giftPickerTitle")}</p>
+                  <p className="text-xs text-gold">{t("giftCreditsBalance", { count: giftCredits })}</p>
+                </div>
+                {gifts.length === 0 ? (
+                  <p className="text-xs text-ivory-muted px-1 py-1.5">{t("noGiftsAvailable")}</p>
                 ) : (
                   <div className="flex flex-col gap-0.5 max-h-48 overflow-y-auto">
-                    {ownedGifts.map((gift) => (
-                      <button
-                        key={gift.id}
-                        type="button"
-                        onClick={() => sendGift(gift.id)}
-                        disabled={sending}
-                        className="flex items-center gap-2 px-2 py-1.5 rounded-sm text-left hover:bg-surface-raised disabled:opacity-50 transition-colors"
-                      >
-                        <span className="text-xl">{gift.emoji}</span>
-                        <span className="text-sm text-ivory">{gift.name}</span>
-                      </button>
-                    ))}
+                    {gifts.map((gift) => {
+                      const affordable = giftCredits >= gift.creditCost;
+                      return (
+                        <button
+                          key={gift.id}
+                          type="button"
+                          onClick={() => sendGift(gift)}
+                          disabled={sending || !affordable}
+                          className="flex items-center gap-2 px-2 py-1.5 rounded-sm text-left hover:bg-surface-raised disabled:opacity-40 transition-colors"
+                        >
+                          <span className="text-xl">{gift.emoji}</span>
+                          <span className="text-sm text-ivory flex-1">{gift.name}</span>
+                          <span className="text-xs text-ivory-muted">{gift.creditCost}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
+                <div className="px-1 pt-1.5 mt-1 border-t border-border">
+                  <Link href="/store" className="text-xs text-gold hover:text-gold-bright">
+                    {t("buyMoreCredits")} →
+                  </Link>
+                </div>
               </div>
             )}
           </div>

@@ -34,31 +34,83 @@ export async function POST(
     return NextResponse.json({ error: "Konversationen är inte längre aktiv." }, { status: 400 });
   }
 
-  // En present måste faktiskt ägas (köpt i Butiken) för att kunna skickas -
-  // samma ägandekontroll som equip/route.ts redan gör för ramar/chattfärger,
-  // fast presenter "utrustas" aldrig, de bara skickas en gång per gång.
+  // ÄNDRAD 2026-09-27 (se claude/velvetine-status.md): en present ägs INTE
+  // längre - Christoffer var uttrycklig om att den ska kosta poäng VARJE
+  // gång man skickar den, inte köpas en gång och sen vara gratis för
+  // alltid. Poängen dras av atomärt i samma databastransaktion som
+  // meddelandet skapas (prisma.$transaction nedan), med ett villkorat
+  // updateMany (giftCredits >= creditCost) som skydd mot att två samtidiga
+  // "skicka present"-klick skulle kunna dra saldot under noll.
+  let message;
   if (giftStoreItemId) {
-    const [owned, giftItem] = await Promise.all([
-      prisma.userStoreItem.findUnique({
-        where: { userId_storeItemId: { userId, storeItemId: giftStoreItemId } },
-      }),
-      prisma.storeItem.findUnique({ where: { id: giftStoreItemId } }),
-    ]);
-    if (!owned || !giftItem || giftItem.category !== "DIGITAL_GIFT") {
-      return NextResponse.json({ error: "Du äger inte den här presenten." }, { status: 403 });
+    const giftItem = await prisma.storeItem.findUnique({ where: { id: giftStoreItemId } });
+    if (!giftItem || giftItem.category !== "DIGITAL_GIFT" || !giftItem.active) {
+      return NextResponse.json({ error: "Den här presenten går inte att skicka just nu." }, { status: 400 });
     }
-  }
+    const creditCost = giftItem.creditCost ?? 0;
 
-  const message = await prisma.message.create({
-    data: {
-      matchId,
-      senderId: userId,
-      content: content || null,
-      imageUrl,
-      giftStoreItemId,
-    },
-    include: { giftStoreItem: { select: { giftEmoji: true } } },
-  });
+    try {
+      message = await prisma.$transaction(async (tx) => {
+        const deducted = await tx.user.updateMany({
+          where: { id: userId, giftCredits: { gte: creditCost } },
+          data: { giftCredits: { decrement: creditCost } },
+        });
+        if (deducted.count === 0) {
+          // Signalvärde, fångas nedan - inte ett riktigt undantag i
+          // meningen "något gick fel", bara "för lågt saldo".
+          throw new Error("INSUFFICIENT_CREDITS");
+        }
+
+        const updatedUser = await tx.user.findUniqueOrThrow({
+          where: { id: userId },
+          select: { giftCredits: true },
+        });
+
+        const created = await tx.message.create({
+          data: {
+            matchId,
+            senderId: userId,
+            content: content || null,
+            imageUrl,
+            giftStoreItemId,
+          },
+          include: { giftStoreItem: { select: { giftEmoji: true } } },
+        });
+
+        await tx.giftCreditTransaction.create({
+          data: {
+            userId,
+            type: "GIFT_SENT",
+            amount: -creditCost,
+            balanceAfter: updatedUser.giftCredits,
+            giftStoreItemId,
+            messageId: created.id,
+          },
+        });
+
+        return created;
+      });
+    } catch (err) {
+      if (err instanceof Error && err.message === "INSUFFICIENT_CREDITS") {
+        return NextResponse.json(
+          { error: "Du har inte tillräckligt med poäng för att skicka den här presenten.", code: "INSUFFICIENT_CREDITS" },
+          { status: 402 }
+        );
+      }
+      throw err;
+    }
+  } else {
+    message = await prisma.message.create({
+      data: {
+        matchId,
+        senderId: userId,
+        content: content || null,
+        imageUrl,
+        giftStoreItemId: null,
+      },
+      include: { giftStoreItem: { select: { giftEmoji: true } } },
+    });
+  }
 
   const isUserA = match.userAId === userId;
   await prisma.match.update({

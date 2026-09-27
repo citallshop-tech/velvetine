@@ -201,7 +201,11 @@
     "categoryBackgrounds": "Profilbakgrund",
     "categoryBackgroundsHint": "Ett bakgrundstema bakom hela ditt profilkort - syns i Bläddra och på din profilsida.",
     "categoryGifts": "Presenter att skicka",
-    "categoryGiftsHint": "Köp en gång, skicka hur många gånger du vill i chatten till dina matchningar.",
+    "categoryGiftsHint": "Skicka i chatten till dina matchningar - varje present kostar poäng, se nedan.",
+    "categoryCredits": "Köp poäng",
+    "categoryCreditsHint": "Poäng används för att skicka presenter i chatten. Inget kontantvärde och går inte att lösa in eller överföra.",
+    "giftCreditCost": "{count} poäng",
+    "giftCreditsBalance": "Du har {count} poäng",
     "noItems": "Inga varor i den här kategorin just nu.",
     "confirmPurchase": "Jag godkänner villkoren för butiken - priset och varan ovan stämmer, och köpet levereras direkt utan ångerrätt.",
     "termsLinkLabel": "Läs villkoren"
@@ -393,6 +397,10 @@
     "imageUploadFailed": "Bilden kunde inte skickas.",
     "sendGift": "Skicka present",
     "giftPickerTitle": "Välj en present",
+    "noGiftsAvailable": "Inga presenter att skicka just nu.",
+    "giftCreditsBalance": "Du har {count} poäng",
+    "buyMoreCredits": "Köp fler poäng",
+    "giftFailed": "Presenten kunde inte skickas.",
     "noGiftsOwned": "Du äger inga presenter än.",
     "goToStore": "Gå till Butiken"
   }

@@ -20,7 +20,20 @@ async function main() {
 
   const stripe = new Stripe(secretKey, { apiVersion: "2026-08-26.dahlia" });
 
-  const items = await prisma.storeItem.findMany({ orderBy: { order: "asc" } });
+  // TILLAGD 2026-09-27 (se claude/velvetine-status.md) - DIGITAL_GIFT får
+  // ALDRIG ett eget Stripe-pris längre. En present köps inte längre för
+  // sig, den kostar poäng att skicka (se GiftCreditPack/creditCost) - ett
+  // pris här skulle bara bli ett dött, aldrig använt Stripe-objekt.
+  const items = await prisma.storeItem.findMany({
+    where: { category: { not: "DIGITAL_GIFT" } },
+    orderBy: { order: "asc" },
+  });
+
+  const categoryLabel: Record<string, string> = {
+    FRAME: "ram",
+    CHAT_THEME: "chattfärg",
+    PROFILE_BACKGROUND: "profilbakgrund",
+  };
 
   for (const item of items) {
     if (item.stripePriceId) {
@@ -29,7 +42,7 @@ async function main() {
     }
 
     const product = await stripe.products.create({
-      name: `Velvetine – ${item.name} (ram)`,
+      name: `Velvetine – ${item.name} (${categoryLabel[item.category] ?? item.category})`,
       metadata: { storeItemId: item.id },
     });
 

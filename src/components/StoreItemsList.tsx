@@ -18,6 +18,11 @@ interface StoreItemData {
   chatBackgroundColor: string | null;
   backgroundGradient: string | null;
   giftEmoji: string | null;
+  // TILLAGD 2026-09-27 (se claude/velvetine-status.md) - bara satt för
+  // DIGITAL_GIFT. priceSek/owned/equipped/purchasable är oanvända för den
+  // kategorin sedan presenter slutade vara en engångsköpt ägodel - se
+  // grenen längst ner i denna fil.
+  creditCost: number | null;
   owned: boolean;
   equipped: boolean;
   purchasable: boolean;
@@ -145,6 +150,27 @@ export function StoreItemsList({
   return (
     <div className="flex flex-col gap-3">
       {items.map((item) => {
+        // ÄNDRAD 2026-09-27 (se claude/velvetine-status.md): DIGITAL_GIFT är
+        // sedan poängsystemet infördes ett rent katalogobjekt här - ingen
+        // köp/äg/utrusta-knapp alls, bara en förhandsvisning av vad
+        // presenten kostar att SKICKA (i poäng, i chatten). Egen, enklare
+        // gren istället för att vira in fler specialfall i den vanliga
+        // köp/utrusta-grenen nedan.
+        if (item.category === "DIGITAL_GIFT") {
+          return (
+            <div key={item.id} className="border border-border bg-surface rounded-sm p-4 flex items-center gap-4">
+              <GiftPreview emoji={item.giftEmoji ?? "🎁"} />
+              <div className="flex-1 min-w-0">
+                <p className="text-ivory">{item.name}</p>
+                {item.description && <p className="text-xs text-ivory-muted">{item.description}</p>}
+              </div>
+              <span className="px-4 py-2 text-sm text-gold shrink-0">
+                {t("giftCreditCost", { count: item.creditCost ?? 0 })}
+              </span>
+            </div>
+          );
+        }
+
         const isEquippable = EQUIPPABLE_CATEGORIES.includes(item.category);
         // TILLAGD 2026-09-21 - köpknappen kräver att kunden bekräftat
         // pris/vara + villkoren (se checkboxen nedan) för varor som inte
@@ -172,7 +198,6 @@ export function StoreItemsList({
               {item.category === "PROFILE_BACKGROUND" && (
                 <BackgroundPreview gradient={item.backgroundGradient ?? "#241c17"} />
               )}
-              {item.category === "DIGITAL_GIFT" && <GiftPreview emoji={item.giftEmoji ?? "🎁"} />}
 
               <div className="flex-1 min-w-0">
                 <p className="text-ivory">{item.name}</p>
@@ -182,32 +207,18 @@ export function StoreItemsList({
                 </p>
               </div>
 
-              {isEquippable ? (
-                item.owned ? (
-                  <button
-                    onClick={() => toggleEquip(item.id, item.equipped)}
-                    disabled={loadingId === item.id}
-                    className={`px-4 py-2 rounded-sm text-sm border shrink-0 disabled:opacity-50 ${
-                      item.equipped
-                        ? "border-border text-ivory-muted hover:border-gold"
-                        : "border-gold text-ivory hover:bg-surface-raised"
-                    }`}
-                  >
-                    {item.equipped ? t("unequip") : t("equip")}
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => buy(item.id)}
-                    disabled={!item.purchasable || !confirmed || loadingId === item.id}
-                    className="px-4 py-2 rounded-sm text-sm border border-gold text-ivory hover:bg-surface-raised disabled:opacity-50 shrink-0"
-                  >
-                    {loadingId === item.id ? t("buying") : t("buy")}
-                  </button>
-                )
-              ) : // DIGITAL_GIFT - inget att utrusta, bara äga och sen skicka i
-              // chatten (se ChatThread.tsx), så bara ett statiskt "Ägs"-läge här.
-              item.owned ? (
-                <span className="px-4 py-2 text-sm text-gold shrink-0">{t("owned")}</span>
+              {isEquippable && item.owned ? (
+                <button
+                  onClick={() => toggleEquip(item.id, item.equipped)}
+                  disabled={loadingId === item.id}
+                  className={`px-4 py-2 rounded-sm text-sm border shrink-0 disabled:opacity-50 ${
+                    item.equipped
+                      ? "border-border text-ivory-muted hover:border-gold"
+                      : "border-gold text-ivory hover:bg-surface-raised"
+                  }`}
+                >
+                  {item.equipped ? t("unequip") : t("equip")}
+                </button>
               ) : (
                 <button
                   onClick={() => buy(item.id)}

@@ -7,6 +7,7 @@ import { isStripeConfigured } from "@/lib/stripe";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
 import { StoreItemsList } from "@/components/StoreItemsList";
+import { GiftCreditPacksList } from "@/components/GiftCreditPacksList";
 
 export default async function StorePage({
   params,
@@ -20,12 +21,15 @@ export default async function StorePage({
     return;
   }
 
-  const [user, items] = await Promise.all([
+  const [user, items, creditPacks] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       include: { storeItemPurchases: { select: { storeItemId: true } } },
     }),
     prisma.storeItem.findMany({ where: { active: true }, orderBy: { order: "asc" } }),
+    // TILLAGD 2026-09-27 (se claude/velvetine-status.md) - poängpaket för
+    // att skicka presenter i chatten.
+    prisma.giftCreditPack.findMany({ where: { active: true }, orderBy: { order: "asc" } }),
   ]);
 
   if (!user) {
@@ -49,6 +53,9 @@ export default async function StorePage({
     // TILLAGD 2026-09-21 - PROFILE_BACKGROUND/DIGITAL_GIFT.
     backgroundGradient: item.backgroundGradient,
     giftEmoji: item.giftEmoji,
+    // TILLAGD 2026-09-27 (se claude/velvetine-status.md) - poängkostnad,
+    // bara relevant/satt för DIGITAL_GIFT.
+    creditCost: item.creditCost,
     owned: ownedIds.has(item.id),
     equipped:
       item.category === "FRAME"
@@ -65,6 +72,15 @@ export default async function StorePage({
   const chatThemeItems = serializedItems.filter((i) => i.category === "CHAT_THEME");
   const backgroundItems = serializedItems.filter((i) => i.category === "PROFILE_BACKGROUND");
   const giftItems = serializedItems.filter((i) => i.category === "DIGITAL_GIFT");
+
+  // TILLAGD 2026-09-27 (se claude/velvetine-status.md).
+  const serializedCreditPacks = creditPacks.map((pack) => ({
+    id: pack.id,
+    name: pickLocalized(locale, pack.name, pack.nameEn, pack.nameDe, pack.nameEs),
+    credits: pack.credits,
+    priceSek: pack.priceSek / 100,
+    purchasable: Boolean(pack.stripePriceId),
+  }));
 
   return (
     <div className="min-h-screen px-6 py-10">
@@ -89,6 +105,13 @@ export default async function StorePage({
         <h2 className="text-ivory text-lg mb-3 mt-10">{t("categoryGifts")}</h2>
         <p className="text-sm text-ivory-muted mb-3">{t("categoryGiftsHint")}</p>
         <StoreItemsList items={giftItems} category="DIGITAL_GIFT" />
+
+        {/* TILLAGD 2026-09-27 (se claude/velvetine-status.md) - poäng köps
+            här, spenderas i chatten (se ChatThread.tsx). */}
+        <h2 className="text-ivory text-lg mb-3 mt-10">{t("categoryCredits")}</h2>
+        <p className="text-sm text-ivory-muted mb-1">{t("categoryCreditsHint")}</p>
+        <p className="text-sm text-gold mb-3">{t("giftCreditsBalance", { count: user.giftCredits })}</p>
+        <GiftCreditPacksList packs={serializedCreditPacks} />
 
         <AppFooter />
       </div>
