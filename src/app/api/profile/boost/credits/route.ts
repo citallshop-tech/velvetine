@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUserId } from "@/lib/auth";
-import { BOOST_DURATION_MS } from "../route";
+import { BOOST_DURATION_MS } from "@/lib/boost";
 
 // TILLAGD 2026-09-27 (se claude/velvetine-status.md) - en poäng-köpt boost,
 // separat endpoint från den gratis nivå-boosten i ../route.ts. Öppen för

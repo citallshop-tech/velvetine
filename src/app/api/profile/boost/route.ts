@@ -1,15 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUserId } from "@/lib/auth";
+import { BOOST_DURATION_MS } from "@/lib/boost";
 
 // Utvald ("Select") and up - an active perk you use, distinct from the
 // passive priority-visibility boost every tier already gets.
 const MIN_TIER_LEVEL_FOR_BOOST = 2;
-// TILLAGD 2026-09-27 (se claude/velvetine-status.md) - exporterad så att
-// den poäng-baserade boosten (../boost/credits/route.ts) använder EXAKT
-// samma längd på boosten, oavsett om man betalade med poäng eller fick den
-// gratis via sin nivå.
-export const BOOST_DURATION_MS = 30 * 60 * 1000; // 30 minutes
 const COOLDOWN_MS = 24 * 60 * 60 * 1000; // once per day
 
 export async function POST() {
