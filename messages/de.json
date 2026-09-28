@@ -42,9 +42,14 @@
     "logout": "Abmelden"
   },
   "AccountActions": {
+    "sectionIntro": "Möchtest du eine Pause einlegen oder dein Konto endgültig schließen?",
     "logout": "Abmelden",
-    "deleteAccount": "Konto schließen",
-    "deleteConfirm": "Das entfernt dein Profil dauerhaft und kann nicht rückgängig gemacht werden. Bist du sicher?",
+    "pauseAccount": "Konto pausieren",
+    "pauseConfirm": "Dein Profil wird sofort ausgeblendet und ein eventuelles Abo wird gekündigt - aber NICHTS wird gelöscht. Fotos, Matches und Nachrichten bleiben genau erhalten. Melde dich jederzeit wieder an, um es zu reaktivieren.",
+    "pauseConfirmYes": "Ja, Konto pausieren",
+    "pauseConfirmYesLoading": "Wird pausiert...",
+    "deleteAccount": "Konto dauerhaft löschen",
+    "deleteConfirm": "Das löscht deine Fotos, Profilantworten und anderen Inhalte dauerhaft und kann nicht rückgängig gemacht werden. Wenn du nur eine Pause möchtest, nutze stattdessen die Option oben.",
     "deleteConfirmYes": "Ja, Konto schließen",
     "deleteConfirmYesLoading": "Wird geschlossen...",
     "cancel": "Abbrechen"

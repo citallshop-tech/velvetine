@@ -42,9 +42,14 @@
     "logout": "Log out"
   },
   "AccountActions": {
+    "sectionIntro": "Want to take a break, or close your account for good?",
     "logout": "Log out",
-    "deleteAccount": "Close my account",
-    "deleteConfirm": "This permanently removes your profile and can't be undone. Are you sure?",
+    "pauseAccount": "Pause my account",
+    "pauseConfirm": "Your profile is hidden right away and any subscription is cancelled - but NOTHING is deleted. Photos, matches and messages stay exactly as they are. Log back in anytime to reactivate.",
+    "pauseConfirmYes": "Yes, pause my account",
+    "pauseConfirmYesLoading": "Pausing...",
+    "deleteAccount": "Delete my account permanently",
+    "deleteConfirm": "This permanently deletes your photos, profile answers and other content and can't be undone. If you just want a break, use the option above instead.",
     "deleteConfirmYes": "Yes, close my account",
     "deleteConfirmYesLoading": "Closing...",
     "cancel": "Cancel"

@@ -96,6 +96,10 @@ function StatusBadge({
   suspendedUntil: Date | null;
 }) {
   if (status === "ACTIVE") return <span className="text-ivory-muted">Aktiv</span>;
+  // TILLAGD 2026-09-28 - se claude/velvetine-status.md. Skiljs medvetet
+  // från Avstängd/Bannad (som är admin-åtgärder) - det här är personens
+  // eget val, inget en admin behöver agera på.
+  if (status === "PAUSED") return <span className="text-ivory-muted">Pausat av användaren</span>;
   if (status === "SUSPENDED") {
     return (
       <span className="text-gold-bright">

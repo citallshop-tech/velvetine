@@ -58,6 +58,10 @@ model User {
   emailVerified          Boolean   @default(false)
   accountStatus          AccountStatus @default(ACTIVE)
   suspendedUntil         DateTime?
+  // TILLAGD 2026-09-28 - satt när accountStatus blir PAUSED, rensas
+  // (null) igen när kontot återaktiveras vid inloggning. Rent
+  // informativt/för admin - ingen kod filtrerar på detta datum.
+  pausedAt               DateTime?
   isAdmin                Boolean   @default(false)
   warningCount           Int       @default(0)
   incognitoMode          Boolean   @default(false)
@@ -164,6 +168,15 @@ enum SubscriptionStatus {
 
 enum AccountStatus {
   ACTIVE
+  // TILLAGD 2026-09-28 (Christoffer: "man ska kunna välja mellan att ha
+  // kvar saker eller inte" - se claude/velvetine-status.md) - ett
+  // självvalt, reversibelt konto-paus, till skillnad från SUSPENDED
+  // (admin-pålagt straff, tidsbegränsat). PAUSED har ingen tidsgräns och
+  // hävs ALDRIG av en admin eller ett cron-jobb - bara av att personen
+  // själv loggar in igen med rätt lösenord (se
+  // src/app/api/auth/login/route.ts). Ingenting raderas när ett konto är
+  // PAUSED - se src/app/api/account/pause/route.ts.
+  PAUSED
   SUSPENDED
   BANNED
   DELETED

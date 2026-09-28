@@ -4,7 +4,7 @@ import { getSessionUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { reactivateIfExpired } from "@/lib/suspension";
 import { pickLocalized } from "@/lib/localizedField";
-import { LogoutButton, DeleteAccountButton } from "@/components/AccountActions";
+import { LogoutButton, AccountClosureSection } from "@/components/AccountActions";
 import { AppFooter } from "@/components/AppFooter";
 import { AppHeader } from "@/components/AppHeader";
 import { IncognitoToggle } from "@/components/IncognitoToggle";
@@ -163,9 +163,7 @@ export default async function DashboardPage({
           </section>
         )}
 
-        <section className="flex flex-col gap-4 items-start">
-          <DeleteAccountButton />
-        </section>
+        <AccountClosureSection />
 
         <AppFooter />
       </main>

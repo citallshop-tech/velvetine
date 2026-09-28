@@ -42,9 +42,14 @@
     "logout": "Cerrar sesión"
   },
   "AccountActions": {
+    "sectionIntro": "¿Quieres tomarte un descanso o cerrar tu cuenta definitivamente?",
     "logout": "Cerrar sesión",
-    "deleteAccount": "Cerrar mi cuenta",
-    "deleteConfirm": "Esto elimina permanentemente tu perfil y no se puede deshacer. ¿Estás seguro?",
+    "pauseAccount": "Pausar mi cuenta",
+    "pauseConfirm": "Tu perfil se oculta de inmediato y se cancela cualquier suscripción - pero NO se borra nada. Fotos, matches y mensajes permanecen exactamente igual. Inicia sesión cuando quieras para reactivarla.",
+    "pauseConfirmYes": "Sí, pausar mi cuenta",
+    "pauseConfirmYesLoading": "Pausando...",
+    "deleteAccount": "Eliminar mi cuenta permanentemente",
+    "deleteConfirm": "Esto elimina permanentemente tus fotos, respuestas de perfil y otro contenido, y no se puede deshacer. Si solo quieres un descanso, usa la opción de arriba.",
     "deleteConfirmYes": "Sí, cerrar mi cuenta",
     "deleteConfirmYesLoading": "Cerrando...",
     "cancel": "Cancelar"

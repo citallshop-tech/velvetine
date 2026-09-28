@@ -65,6 +65,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(genericError, { status: 401 });
   }
 
+  // TILLAGD 2026-09-28 (se claude/velvetine-status.md och
+  // src/app/api/account/pause/route.ts) - ett PAUSED-konto (självvalt,
+  // reversibelt, till skillnad från SUSPENDED ovan) återaktiveras här
+  // automatiskt så fort rätt lösenord angetts - ingen admin, inget
+  // separat "återaktivera"-steg behövs. Görs EFTER lösenordskontrollen
+  // (till skillnad från SUSPENDED/BANNED-blocken ovan) så att ingen kan
+  // gissa sig till att ett konto är pausat utan att faktiskt känna till
+  // lösenordet.
+  if (user.accountStatus === "PAUSED") {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { accountStatus: "ACTIVE", pausedAt: null },
+    });
+  }
+
   await createSession(user.id);
 
   return NextResponse.json({ id: user.id, email: user.email });

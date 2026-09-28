@@ -110,7 +110,10 @@ export function UserActionButtons({
         >
           Återaktivera nu
         </button>
-      ) : status === "ACTIVE" ? (
+      // TILLAGD 2026-09-28 - en admin ska kunna stänga av ett konto
+      // oavsett om personen själv har pausat det (PAUSED), se
+      // claude/velvetine-status.md.
+      ) : status === "ACTIVE" || status === "PAUSED" ? (
         <button
           disabled={loading}
           onClick={() => setChoosingDuration(true)}

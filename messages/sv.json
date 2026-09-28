@@ -42,9 +42,14 @@
     "logout": "Logga ut"
   },
   "AccountActions": {
+    "sectionIntro": "Vill du ta en paus, eller avsluta helt?",
     "logout": "Logga ut",
-    "deleteAccount": "Avsluta mitt konto",
-    "deleteConfirm": "Det här tar bort din profil permanent och går inte att ångra. Är du säker?",
+    "pauseAccount": "Pausa mitt konto",
+    "pauseConfirm": "Din profil döljs direkt och en eventuell prenumeration avslutas - men INGET raderas. Bilder, matchningar och meddelanden finns kvar exakt som de är. Logga in igen när du vill för att aktivera kontot igen.",
+    "pauseConfirmYes": "Ja, pausa kontot",
+    "pauseConfirmYesLoading": "Pausar...",
+    "deleteAccount": "Radera mitt konto permanent",
+    "deleteConfirm": "Det här raderar dina bilder, profilsvar och annat innehåll permanent och går inte att ångra. Vill du bara ta en paus istället kan du välja det ovan.",
     "deleteConfirmYes": "Ja, avsluta kontot",
     "deleteConfirmYesLoading": "Avslutar...",
     "cancel": "Avbryt"
